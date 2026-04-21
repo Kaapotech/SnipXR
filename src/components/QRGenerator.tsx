@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { QrCode, Download } from 'lucide-react';
+import { QrCode, DownloadSimple } from '@phosphor-icons/react';
+import { motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function QRGenerator() {
@@ -28,12 +29,17 @@ export default function QRGenerator() {
   };
 
   return (
-    <section className="py-12 px-4 bg-black/20 animate-fade-in animate-slide-in-from-bottom">
-      <div className="max-w-4xl mx-auto">
+    <section className="py-12 px-4">
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-4xl mx-auto"
+      >
         <div className="bg-dark-gray rounded-3xl p-6 md:p-12 shadow-2xl border border-brand-magenta/20 transition-all hover:border-brand-magenta/40">
           <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8">
             <div className="p-3 bg-brand-magenta/10 rounded-2xl w-fit">
-              <QrCode className="w-8 h-8 text-brand-magenta" />
+              <QrCode size={32} weight="bold" className="text-brand-magenta" />
             </div>
             <div>
               <h2 className="text-2xl md:text-3xl font-bold text-white">QR Code Generator</h2>
@@ -58,7 +64,7 @@ export default function QRGenerator() {
                   onClick={downloadQR}
                   className="w-full bg-brand-magenta hover:bg-brand-magenta/90 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95"
                 >
-                  <Download className="w-5 h-5" />
+                  <DownloadSimple size={20} weight="bold" />
                   Download PNG
                 </button>
               )}
@@ -76,14 +82,14 @@ export default function QRGenerator() {
                 />
               ) : (
                 <div className="text-gray-400 text-center flex flex-col items-center gap-4">
-                  <QrCode className="w-16 h-16 opacity-20" />
+                  <QrCode size={64} weight="thin" className="opacity-20" />
                   <p>Enter text or URL to preview</p>
                 </div>
               )}
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

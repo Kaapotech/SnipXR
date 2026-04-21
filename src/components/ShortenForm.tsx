@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Link2, Copy, Check, AlertCircle } from 'lucide-react';
+import { LinkSimple, Copy, Check, WarningCircle } from '@phosphor-icons/react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export default function ShortenForm() {
@@ -65,12 +66,17 @@ export default function ShortenForm() {
   };
 
   return (
-    <section className="py-12 px-4 animate-fade-in animate-slide-in-from-bottom">
-      <div className="max-w-4xl mx-auto">
+    <section className="py-12 px-4">
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-4xl mx-auto"
+      >
         <div className="bg-dark-gray rounded-3xl p-6 md:p-12 shadow-2xl border border-brand-blue/20 transition-all hover:border-brand-blue/40">
           <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8">
             <div className="p-3 bg-brand-blue/10 rounded-2xl w-fit">
-              <Link2 className="w-8 h-8 text-brand-blue" />
+              <LinkSimple size={32} weight="bold" className="text-brand-blue" />
             </div>
             <div>
               <h2 className="text-2xl md:text-3xl font-bold text-white">Shorten Link</h2>
@@ -100,15 +106,24 @@ export default function ShortenForm() {
               </button>
             </div>
             {error && (
-              <div className="flex items-center gap-2 text-red-400 text-sm mt-2 animate-fade-in">
-                <AlertCircle className="w-4 h-4" />
+              <motion.div 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-2 text-red-400 text-sm mt-2"
+              >
+                <WarningCircle size={16} weight="fill" />
                 <span>{error}</span>
-              </div>
+              </motion.div>
             )}
           </form>
 
           {shortened && (
-            <div className="mt-8 p-6 bg-brand-blue/5 border border-brand-blue/20 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in animate-slide-in-from-bottom duration-500">
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="mt-8 p-6 bg-brand-blue/5 border border-brand-blue/20 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4"
+            >
               <div className="flex flex-col">
                 <span className="text-sm text-brand-blue font-medium mb-1">Your shortened link:</span>
                 <span className="text-xl font-mono text-white break-all">{shortened}</span>
@@ -120,13 +135,13 @@ export default function ShortenForm() {
                   copied ? "bg-green-500 text-white" : "bg-white text-dark-gray hover:bg-gray-200"
                 )}
               >
-                {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                {copied ? <Check size={20} weight="bold" /> : <Copy size={20} weight="bold" />}
                 {copied ? 'Copied!' : 'Copy'}
               </button>
-            </div>
+            </motion.div>
           )}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

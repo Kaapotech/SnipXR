@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { Zap, Menu, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Lightning, List, X } from '@phosphor-icons/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,6 +21,15 @@ export default function Navbar() {
     setIsMenuOpen(false);
   };
 
+  const getActiveColor = () => {
+    if (pathname === '/link_shortener') return { text: 'text-brand-blue', bg: 'bg-brand-blue', border: 'border-brand-blue/20' };
+    if (pathname === '/qr_codes') return { text: 'text-brand-magenta', bg: 'bg-brand-magenta', border: 'border-brand-magenta/20' };
+    if (pathname === '/templates') return { text: 'text-brand-yellow', bg: 'bg-brand-yellow', border: 'border-brand-yellow/20' };
+    return { text: 'text-white', bg: 'bg-white', border: 'border-white/10' };
+  };
+
+  const activeColors = getActiveColor();
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-lg border-b border-white/5">
       <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
@@ -28,10 +38,18 @@ export default function Navbar() {
           onClick={handleLinkClick}
           className="flex items-center gap-2 group"
         >
-          <div className="bg-white p-1.5 rounded-lg group-hover:rotate-12 transition-transform">
-            <Zap className="w-5 h-5 text-black fill-black" />
+          <div className={cn(
+            "p-1.5 rounded-lg group-hover:rotate-12 transition-transform",
+            activeColors.bg === 'bg-white' ? 'bg-white' : activeColors.bg
+          )}>
+            <Lightning size={20} weight="fill" className={cn(
+              activeColors.bg === 'bg-white' ? 'text-black' : 'text-white'
+            )} />
           </div>
-          <span className="text-xl font-bold tracking-tight text-white">SnipXR</span>
+          <span className={cn(
+            "text-xl font-bold tracking-tight transition-colors",
+            activeColors.bg === 'bg-white' ? 'text-white' : activeColors.text
+          )}>SnipXR</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
@@ -52,8 +70,11 @@ export default function Navbar() {
 
         <div className="flex items-center gap-2 md:gap-4">
           <Link 
-            href="/link_shortener"
-            className="hidden sm:block bg-white hover:bg-gray-200 text-black px-4 md:px-6 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-bold transition-all active:scale-95"
+            href="/register"
+            className={cn(
+              "hidden sm:block px-4 md:px-6 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-bold transition-all active:scale-95",
+              activeColors.bg === 'bg-white' ? "bg-white hover:bg-gray-200 text-black" : `${activeColors.bg} text-white hover:opacity-90`
+            )}
           >
             Get Started
           </Link>
@@ -62,40 +83,50 @@ export default function Navbar() {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="md:hidden p-2 text-white hover:bg-white/10 rounded-xl transition-colors"
           >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMenuOpen ? <X size={24} weight="bold" /> : <List size={24} weight="bold" />}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu Overlay */}
-      <div className={cn(
-        "md:hidden absolute top-20 left-0 right-0 bg-black/95 backdrop-blur-2xl border-b border-white/10 transition-all duration-300 overflow-hidden",
-        isMenuOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
-      )}>
-        <div className="p-6 flex flex-col gap-4">
-          {tabs.map((tab) => (
-            <Link
-              key={tab.id}
-              href={tab.href}
-              onClick={handleLinkClick}
-              className={cn(
-                "w-full text-left px-4 py-4 rounded-2xl text-lg font-bold transition-all flex items-center justify-between",
-                pathname === tab.href ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"
-              )}
-            >
-              {tab.label}
-              {pathname === tab.href && <div className={cn("w-2 h-2 rounded-full", tab.active.replace('text-', 'bg-'))} />}
-            </Link>
-          ))}
-          <Link 
-            href="/link_shortener"
-            onClick={handleLinkClick}
-            className="mt-2 bg-white text-black w-full py-4 rounded-2xl font-black text-center active:scale-95 transition-all"
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="md:hidden absolute top-20 left-0 right-0 bg-black/95 backdrop-blur-2xl border-b border-white/10 overflow-hidden"
           >
-            Get Started Now
-          </Link>
-        </div>
-      </div>
+            <div className="p-6 flex flex-col gap-4">
+              {tabs.map((tab) => (
+                <Link
+                  key={tab.id}
+                  href={tab.href}
+                  onClick={handleLinkClick}
+                  className={cn(
+                    "w-full text-left px-4 py-4 rounded-2xl text-lg font-bold transition-all flex items-center justify-between",
+                    pathname === tab.href ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"
+                  )}
+                >
+                  {tab.label}
+                  {pathname === tab.href && <div className={cn("w-2 h-2 rounded-full", tab.active.replace('text-', 'bg-'))} />}
+                </Link>
+              ))}
+              <Link 
+                href="/register"
+                onClick={handleLinkClick}
+                className={cn(
+                  "mt-2 w-full py-4 rounded-2xl font-black text-center active:scale-95 transition-all",
+                  activeColors.bg === 'bg-white' ? "bg-white text-black" : `${activeColors.bg} text-white`
+                )}
+              >
+                Get Started Now
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }
