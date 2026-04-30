@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import db from '@/lib/db';
 
 // Funcție utilă pentru validarea URL-urilor pe server
 function isValidUrl(url: string) {
@@ -23,17 +24,27 @@ export async function POST(request: Request) {
     }
 
     // Generăm un cod unic de 6 caractere
-    const code = Math.random().toString(36).substring(2, 8);
+    let code = Math.random().toString(36).substring(2, 8);
     
-    // În producție, ar trebui să folosești o variabilă de mediu (ENV) pentru domeniu
-    // Ex: const domain = process.env.NEXT_PUBLIC_BASE_URL || 'https://snipxr.com';
-    const domain = 'https://snipxr.com';
+    // Verificăm dacă codul există deja (rar, dar posibil)
+    let exists = await db.link.findUnique({ where: { shortCode: code } });
+    while (exists) {
+      code = Math.random().toString(36).substring(2, 8);
+      exists = await db.link.findUnique({ where: { shortCode: code } });
+    }
+
+    // Salvăm în baza de date
+    const newLink = await db.link.create({
+      data: {
+        originalUrl: url,
+        shortCode: code,
+      }
+    });
+
+    const domain = process.env.NEXT_PUBLIC_BASE_URL || 'https://snipxr.com';
     const shortUrl = `${domain}/${code}`;
 
-    // TODO: Aici trebuie integrată baza de date (Prisma/Supabase)
-    // await db.link.create({ data: { code, originalUrl: url } });
-
-    return NextResponse.json({ shortUrl, code });
+    return NextResponse.json({ shortUrl, code: newLink.shortCode });
   } catch (error) {
     console.error('API Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

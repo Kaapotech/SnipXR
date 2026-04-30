@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Zap, AlertTriangle } from 'lucide-react';
+import db from '@/lib/db';
 
 interface Props {
   params: Promise<{ code: string }>;
@@ -9,15 +10,19 @@ interface Props {
 export default async function RedirectPage({ params }: Props) {
   const { code } = await params;
 
-  // 1. Fetch the long URL from your database using the code
-  // const data = await db.links.findUnique({ where: { code } });
-  
-  // 2. Logică de simulare (mock) pentru demo:
-  // În producție, dacă 'destination' nu există în DB, returnezi 404.
-  const destination = null; // Simulăm un link care nu există pentru a arăta pagina de 404 custom
+  // 1. Căutăm URL-ul original în baza de date folosind codul
+  const linkData = await db.link.findUnique({
+    where: { shortCode: code }
+  });
 
-  if (destination) {
-    redirect(destination);
+  if (linkData) {
+    // Incrementăm numărul de click-uri (opțional, dar util pentru analytics)
+    await db.link.update({
+      where: { id: linkData.id },
+      data: { clicks: { increment: 1 } }
+    });
+
+    redirect(linkData.originalUrl);
   }
 
   return (
