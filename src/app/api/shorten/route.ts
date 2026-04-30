@@ -45,8 +45,8 @@ export async function POST(request: Request) {
       }
     });
 
-    const domain = process.env.NEXT_PUBLIC_BASE_URL || 'https://snipxr.com';
-    const shortUrl = `${domain}/${code}`;
+    const origin = new URL(request.url).origin;
+    const shortUrl = `${origin}/${code}`;
 
     return NextResponse.json({ shortUrl, code: newLink.shortCode });
   } catch (error) {

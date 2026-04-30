@@ -10,19 +10,21 @@ interface Props {
 export default async function RedirectPage({ params }: Props) {
   const { code } = await params;
 
-  // 1. Căutăm URL-ul original în baza de date folosind codul
-  const linkData = await db.link.findUnique({
-    where: { shortCode: code }
-  });
-
-  if (linkData) {
-    // Incrementăm numărul de click-uri (opțional, dar util pentru analytics)
-    await db.link.update({
-      where: { id: linkData.id },
-      data: { clicks: { increment: 1 } }
+  try {
+    const linkData = await db.link.findUnique({
+      where: { shortCode: code }
     });
 
-    redirect(linkData.originalUrl);
+    if (linkData) {
+      await db.link.update({
+        where: { id: linkData.id },
+        data: { clicks: { increment: 1 } }
+      });
+
+      redirect(linkData.originalUrl);
+    }
+  } catch {
+    // DB error — afișăm pagina de not found
   }
 
   return (

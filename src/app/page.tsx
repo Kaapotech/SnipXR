@@ -7,8 +7,10 @@ import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 
 export default function Home() {
+  const { data: session } = useSession();
   const heroRef = useRef(null);
   const titleRef = useRef(null);
 
@@ -88,8 +90,8 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.8 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6"
             >
-              <Link 
-                href="/register"
+              <Link
+                href={session ? '/link_shortener' : '/register'}
                 className="bg-white text-black font-black px-10 py-5 rounded-2xl flex items-center gap-2 hover:bg-gray-200 transition-all active:scale-95 text-lg w-full sm:w-auto justify-center"
               >
                 Start Building <ArrowRight size={20} weight="bold" />
