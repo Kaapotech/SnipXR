@@ -1,15 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { Lightning, List, X } from '@phosphor-icons/react';
+import { Lightning, List, X, User as UserIcon, SignOut } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useSession, signOut } from 'next-auth/react';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   const tabs = [
     { id: 'shorten', label: 'Link Shortener', href: '/link_shortener', color: 'hover:text-brand-blue', active: 'text-brand-blue' },
@@ -66,18 +68,45 @@ export default function Navbar() {
               {tab.label}
             </Link>
           ))}
+          {session && (
+            <Link
+              href="/dashboard"
+              className={cn(
+                "text-sm font-medium transition-colors",
+                pathname === "/dashboard" ? "text-white" : "text-gray-400 hover:text-white"
+              )}
+            >
+              Dashboard
+            </Link>
+          )}
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
-          <Link 
-            href="/register"
-            className={cn(
-              "hidden sm:block px-4 md:px-6 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-bold transition-all active:scale-95",
-              activeColors.bg === 'bg-white' ? "bg-white hover:bg-gray-200 text-black" : `${activeColors.bg} text-white hover:opacity-90`
-            )}
-          >
-            Get Started
-          </Link>
+          {session ? (
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2 rounded-full">
+                <UserIcon size={16} className="text-brand-blue" />
+                <span className="text-xs font-bold text-gray-300">{session.user?.name || session.user?.email?.split('@')[0]}</span>
+              </div>
+              <button 
+                onClick={() => signOut()}
+                className="p-2.5 bg-white/5 hover:bg-red-500/10 hover:text-red-500 border border-white/10 rounded-full transition-all active:scale-95"
+                title="Sign Out"
+              >
+                <SignOut size={18} weight="bold" />
+              </button>
+            </div>
+          ) : (
+            <Link 
+              href="/login"
+              className={cn(
+                "px-4 md:px-6 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-bold transition-all active:scale-95",
+                activeColors.bg === 'bg-white' ? "bg-white hover:bg-gray-200 text-black" : `${activeColors.bg} text-white hover:opacity-90`
+              )}
+            >
+              Login
+            </Link>
+          )}
           
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -113,16 +142,40 @@ export default function Navbar() {
                   {pathname === tab.href && <div className={cn("w-2 h-2 rounded-full", tab.active.replace('text-', 'bg-'))} />}
                 </Link>
               ))}
-              <Link 
-                href="/register"
-                onClick={handleLinkClick}
-                className={cn(
-                  "mt-2 w-full py-4 rounded-2xl font-black text-center active:scale-95 transition-all",
-                  activeColors.bg === 'bg-white' ? "bg-white text-black" : `${activeColors.bg} text-white`
-                )}
-              >
-                Get Started Now
-              </Link>
+              
+              {session && (
+                <Link
+                  href="/dashboard"
+                  onClick={handleLinkClick}
+                  className={cn(
+                    "w-full text-left px-4 py-4 rounded-2xl text-lg font-bold transition-all flex items-center justify-between",
+                    pathname === "/dashboard" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"
+                  )}
+                >
+                  Dashboard
+                  {pathname === "/dashboard" && <div className="w-2 h-2 rounded-full bg-white" />}
+                </Link>
+              )}
+
+              {session ? (
+                <button 
+                  onClick={() => signOut()}
+                  className="mt-2 w-full py-4 rounded-2xl font-black text-center bg-red-500/10 text-red-500 border border-red-500/20 active:scale-95 transition-all"
+                >
+                  Sign Out
+                </button>
+              ) : (
+                <Link 
+                  href="/login"
+                  onClick={handleLinkClick}
+                  className={cn(
+                    "mt-2 w-full py-4 rounded-2xl font-black text-center active:scale-95 transition-all",
+                    activeColors.bg === 'bg-white' ? "bg-white text-black" : `${activeColors.bg} text-white`
+                  )}
+                >
+                  Login Now
+                </Link>
+              )}
             </div>
           </motion.div>
         )}

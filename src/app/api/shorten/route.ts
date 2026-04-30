@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 // Funcție utilă pentru validarea URL-urilor pe server
 function isValidUrl(url: string) {
@@ -13,6 +15,7 @@ function isValidUrl(url: string) {
 
 export async function POST(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
     const { url } = await request.json();
 
     if (!url) {
@@ -26,18 +29,19 @@ export async function POST(request: Request) {
     // Generăm un cod unic de 6 caractere
     let code = Math.random().toString(36).substring(2, 8);
     
-    // Verificăm dacă codul există deja (rar, dar posibil)
+    // Verificăm dacă codul există deja
     let exists = await db.link.findUnique({ where: { shortCode: code } });
     while (exists) {
       code = Math.random().toString(36).substring(2, 8);
       exists = await db.link.findUnique({ where: { shortCode: code } });
     }
 
-    // Salvăm în baza de date
+    // Salvăm în baza de date, asociind userId dacă utilizatorul este logat
     const newLink = await db.link.create({
       data: {
         originalUrl: url,
         shortCode: code,
+        userId: session?.user?.id || null, // Dacă e logat, salvăm ID-ul
       }
     });
 
