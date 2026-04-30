@@ -10,6 +10,8 @@ interface Props {
 export default async function RedirectPage({ params }: Props) {
   const { code } = await params;
 
+  let targetUrl: string | null = null;
+
   try {
     const linkData = await db.link.findUnique({
       where: { shortCode: code }
@@ -20,11 +22,14 @@ export default async function RedirectPage({ params }: Props) {
         where: { id: linkData.id },
         data: { clicks: { increment: 1 } }
       });
-
-      redirect(linkData.originalUrl);
+      targetUrl = linkData.originalUrl;
     }
   } catch {
     // DB error — afișăm pagina de not found
+  }
+
+  if (targetUrl) {
+    redirect(targetUrl);
   }
 
   return (
