@@ -87,7 +87,7 @@ export default async function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {links.map((link) => (
+                    {links.map((link: { id: string; originalUrl: string; shortCode: string; clicks: number; createdAt: Date }) => (
                       <tr key={link.id} className="hover:bg-white/5 transition-colors">
                         <td className="px-6 py-4 max-w-xs truncate text-gray-400 text-sm">
                           {link.originalUrl}

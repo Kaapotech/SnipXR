@@ -1,10 +1,39 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { Lightning, ArrowRight, Envelope, Lock, GoogleLogo, GithubLogo } from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const result = await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+    });
+
+    setLoading(false);
+
+    if (result?.error) {
+      setError('Invalid email or password.');
+    } else {
+      router.push('/dashboard');
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {/* Glow Effects */}
@@ -13,7 +42,7 @@ export default function LoginPage() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-magenta/10 blur-[120px] rounded-full" />
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -31,14 +60,17 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-dark-gray border border-white/5 rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-400 ml-1">Email address</label>
               <div className="relative">
                 <Envelope size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   placeholder="name@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                   className="w-full bg-black/40 border border-gray-800 focus:border-brand-blue/50 focus:ring-1 focus:ring-brand-blue/50 rounded-2xl py-4 pl-12 pr-4 outline-none transition-all"
                 />
               </div>
@@ -51,16 +83,27 @@ export default function LoginPage() {
               </div>
               <div className="relative">
                 <Lock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                   className="w-full bg-black/40 border border-gray-800 focus:border-brand-blue/50 focus:ring-1 focus:ring-brand-blue/50 rounded-2xl py-4 pl-12 pr-4 outline-none transition-all"
                 />
               </div>
             </div>
 
-            <button className="w-full bg-white text-black font-black py-4 rounded-2xl hover:bg-gray-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
-              Sign In <ArrowRight size={18} weight="bold" />
+            {error && (
+              <p className="text-red-400 text-sm text-center">{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-white text-black font-black py-4 rounded-2xl hover:bg-gray-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Signing in...' : <><span>Sign In</span><ArrowRight size={18} weight="bold" /></>}
             </button>
           </form>
 
@@ -74,17 +117,23 @@ export default function LoginPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center gap-2 py-3 border border-white/5 rounded-2xl hover:bg-white/5 transition-all text-sm font-bold">
+            <button
+              onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+              className="flex items-center justify-center gap-2 py-3 border border-white/5 rounded-2xl hover:bg-white/5 transition-all text-sm font-bold"
+            >
               <GoogleLogo size={20} /> Google
             </button>
-            <button className="flex items-center justify-center gap-2 py-3 border border-white/5 rounded-2xl hover:bg-white/5 transition-all text-sm font-bold">
+            <button
+              onClick={() => signIn('github', { callbackUrl: '/dashboard' })}
+              className="flex items-center justify-center gap-2 py-3 border border-white/5 rounded-2xl hover:bg-white/5 transition-all text-sm font-bold"
+            >
               <GithubLogo size={20} /> GitHub
             </button>
           </div>
         </div>
 
         <p className="text-center mt-8 text-gray-400">
-          Don't have an account? {' '}
+          Don&apos;t have an account?{' '}
           <Link href="/register" className="text-white font-bold hover:underline">Sign up for free</Link>
         </p>
       </motion.div>

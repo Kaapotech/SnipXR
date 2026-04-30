@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -E \"^pg$|adapter-pg|adapter-pg$\")"
+      "Bash(grep -E \"^pg$|adapter-pg|adapter-pg$\")",
+      "Bash(npm install:*)"
     ]
   }
 }

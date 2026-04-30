@@ -1,10 +1,55 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { Lightning, ArrowRight, Envelope, Lock, User, GoogleLogo, GithubLogo } from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error || 'Something went wrong.');
+      setLoading(false);
+      return;
+    }
+
+    const result = await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+    });
+
+    setLoading(false);
+
+    if (result?.error) {
+      setError('Account created but login failed. Please log in manually.');
+      router.push('/login');
+    } else {
+      router.push('/dashboard');
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {/* Glow Effects */}
@@ -13,7 +58,7 @@ export default function RegisterPage() {
         <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-yellow/5 blur-[120px] rounded-full" />
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -31,14 +76,17 @@ export default function RegisterPage() {
         </div>
 
         <div className="bg-dark-gray border border-white/5 rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-400 ml-1">Full Name</label>
               <div className="relative">
                 <User size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="John Doe"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
                   className="w-full bg-black/40 border border-gray-800 focus:border-brand-magenta/50 focus:ring-1 focus:ring-brand-magenta/50 rounded-2xl py-4 pl-12 pr-4 outline-none transition-all"
                 />
               </div>
@@ -48,9 +96,12 @@ export default function RegisterPage() {
               <label className="text-sm font-medium text-gray-400 ml-1">Email address</label>
               <div className="relative">
                 <Envelope size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   placeholder="name@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                   className="w-full bg-black/40 border border-gray-800 focus:border-brand-magenta/50 focus:ring-1 focus:ring-brand-magenta/50 rounded-2xl py-4 pl-12 pr-4 outline-none transition-all"
                 />
               </div>
@@ -60,16 +111,28 @@ export default function RegisterPage() {
               <label className="text-sm font-medium text-gray-400 ml-1">Password</label>
               <div className="relative">
                 <Lock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
                   className="w-full bg-black/40 border border-gray-800 focus:border-brand-magenta/50 focus:ring-1 focus:ring-brand-magenta/50 rounded-2xl py-4 pl-12 pr-4 outline-none transition-all"
                 />
               </div>
             </div>
 
-            <button className="w-full mt-4 bg-white text-black font-black py-4 rounded-2xl hover:bg-gray-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
-              Get Started <ArrowRight size={18} weight="bold" />
+            {error && (
+              <p className="text-red-400 text-sm text-center">{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full mt-4 bg-white text-black font-black py-4 rounded-2xl hover:bg-gray-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Creating account...' : <><span>Get Started</span><ArrowRight size={18} weight="bold" /></>}
             </button>
           </form>
 
@@ -83,17 +146,23 @@ export default function RegisterPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center gap-2 py-3 border border-white/5 rounded-2xl hover:bg-white/5 transition-all text-sm font-bold">
+            <button
+              onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+              className="flex items-center justify-center gap-2 py-3 border border-white/5 rounded-2xl hover:bg-white/5 transition-all text-sm font-bold"
+            >
               <GoogleLogo size={20} /> Google
             </button>
-            <button className="flex items-center justify-center gap-2 py-3 border border-white/5 rounded-2xl hover:bg-white/5 transition-all text-sm font-bold">
+            <button
+              onClick={() => signIn('github', { callbackUrl: '/dashboard' })}
+              className="flex items-center justify-center gap-2 py-3 border border-white/5 rounded-2xl hover:bg-white/5 transition-all text-sm font-bold"
+            >
               <GithubLogo size={20} /> GitHub
             </button>
           </div>
         </div>
 
         <p className="text-center mt-8 text-gray-400">
-          Already have an account? {' '}
+          Already have an account?{' '}
           <Link href="/login" className="text-white font-bold hover:underline">Log in</Link>
         </p>
       </motion.div>

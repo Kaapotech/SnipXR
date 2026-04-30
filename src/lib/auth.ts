@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import GithubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { AuthOptions } from "next-auth";
+import bcrypt from "bcryptjs";
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(db) as any,
@@ -23,26 +24,18 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        // Aceasta este o implementare de test. In productie trebuie sa verificam parola hashed.
         if (!credentials?.email || !credentials?.password) return null;
-        
+
         const user = await db.user.findUnique({
           where: { email: credentials.email }
         });
 
-        if (user) {
-          return user as any;
-        }
-        
-        // Daca nu exista, il cream (doar pentru acest demo rapid)
-        const newUser = await db.user.create({
-          data: {
-            email: credentials.email,
-            name: credentials.email.split('@')[0],
-          }
-        });
+        if (!user || !user.password) return null;
 
-        return newUser as any;
+        const passwordMatch = await bcrypt.compare(credentials.password, user.password);
+        if (!passwordMatch) return null;
+
+        return user as any;
       }
     })
   ],
