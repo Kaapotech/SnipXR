@@ -20,33 +20,36 @@ export default function RegisterPage() {
     setError('');
     setLoading(true);
 
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
-    });
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      setError(data.error || 'Something went wrong.');
+      if (!res.ok) {
+        setError(data.error || 'Something went wrong.');
+        return;
+      }
+
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError('Account created but login failed. Please log in manually.');
+        router.push('/login');
+      } else {
+        router.push('/dashboard');
+      }
+    } catch {
+      setError('Could not connect to server. Please try again.');
+    } finally {
       setLoading(false);
-      return;
-    }
-
-    const result = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-    });
-
-    setLoading(false);
-
-    if (result?.error) {
-      setError('Account created but login failed. Please log in manually.');
-      router.push('/login');
-    } else {
-      router.push('/dashboard');
     }
   }
 
