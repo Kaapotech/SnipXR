@@ -48,7 +48,7 @@ export default async function DashboardPage() {
                 <span className="text-gray-400 font-bold uppercase tracking-widest text-xs">Total Clicks</span>
               </div>
               <div className="text-3xl font-black">
-                {links.reduce((acc, link) => acc + link.clicks, 0)}
+                {links.reduce((acc: number, link) => acc + link.clicks, 0)}
               </div>
             </div>
 
