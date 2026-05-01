@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import bcrypt from "bcryptjs";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  const limited = checkRateLimit(
+    `${getClientIp(request)}:register`,
+    { limit: 5, windowMs: 15 * 60_000 }
+  );
+  if (limited) return limited;
+
   try {
     const { name, email, password } = await request.json();
 
