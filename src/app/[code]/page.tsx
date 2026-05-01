@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import Link from 'next/link';
 import { Zap, AlertTriangle } from 'lucide-react';
 import db from '@/lib/db';
+import { parseBrowser, parseDevice } from '@/lib/ua-parser';
 
 interface Props {
   params: Promise<{ code: string }>;
@@ -18,10 +20,27 @@ export default async function RedirectPage({ params }: Props) {
     });
 
     if (linkData) {
-      await db.link.update({
-        where: { id: linkData.id },
-        data: { clicks: { increment: 1 } }
-      });
+      const headersList = await headers();
+      const ua = headersList.get('user-agent') ?? '';
+      const country = headersList.get('x-vercel-ip-country') ?? 'Unknown';
+      const browser = parseBrowser(ua);
+      const device = parseDevice(ua);
+
+      await Promise.all([
+        db.link.update({
+          where: { id: linkData.id },
+          data: { clicks: { increment: 1 } }
+        }),
+        db.clickEvent.create({
+          data: {
+            linkId: linkData.id,
+            country,
+            browser,
+            device,
+          }
+        })
+      ]);
+
       targetUrl = linkData.originalUrl;
     }
   } catch {
@@ -38,13 +57,13 @@ export default async function RedirectPage({ params }: Props) {
         <div className="bg-red-500/10 p-4 rounded-2xl inline-block mb-6">
           <AlertTriangle className="w-12 h-12 text-red-500" />
         </div>
-        
+
         <h1 className="text-3xl font-black mb-4">Link Expired or Not Found</h1>
         <p className="text-gray-400 mb-8 leading-relaxed">
           The link you're looking for (<code>{code}</code>) doesn't exist or has been removed from our system.
         </p>
 
-        <Link 
+        <Link
           href="/"
           className="bg-white text-black font-bold px-8 py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-200 transition-all active:scale-95"
         >
@@ -52,7 +71,7 @@ export default async function RedirectPage({ params }: Props) {
           Create your own link
         </Link>
       </div>
-      
+
       <div className="mt-8 text-gray-600 text-sm">
         &copy; 2026 SnipXR - Premium Link Management
       </div>

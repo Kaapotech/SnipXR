@@ -7,6 +7,20 @@ import Footer from "@/components/Footer";
 import { Link as LinkIcon, CursorClick, Calendar, Trash } from "@phosphor-icons/react/dist/ssr";
 import { deleteLink } from "./actions";
 
+function mostCommon(values: (string | null)[]): string {
+  const filtered = values.filter(Boolean) as string[];
+  if (!filtered.length) return "—";
+  const freq: Record<string, number> = {};
+  for (const v of filtered) freq[v] = (freq[v] ?? 0) + 1;
+  return Object.entries(freq).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  RO: "🇷🇴", US: "🇺🇸", GB: "🇬🇧", DE: "🇩🇪", FR: "🇫🇷",
+  IT: "🇮🇹", ES: "🇪🇸", NL: "🇳🇱", CA: "🇨🇦", AU: "🇦🇺",
+  JP: "🇯🇵", CN: "🇨🇳", BR: "🇧🇷", IN: "🇮🇳", KR: "🇰🇷",
+};
+
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
@@ -17,12 +31,17 @@ export default async function DashboardPage() {
   const links = await db.link.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
+    include: {
+      clickEvents: {
+        select: { country: true, browser: true, device: true },
+      },
+    },
   });
 
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
       <Navbar />
-      
+
       <div className="flex-grow pt-32 pb-20 px-4">
         <div className="max-w-6xl mx-auto">
           <header className="mb-12">
@@ -40,7 +59,7 @@ export default async function DashboardPage() {
               </div>
               <div className="text-3xl font-black">{links.length}</div>
             </div>
-            
+
             <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
               <div className="flex items-center gap-4 mb-4">
                 <div className="p-3 bg-brand-magenta/20 rounded-2xl">
@@ -49,7 +68,7 @@ export default async function DashboardPage() {
                 <span className="text-gray-400 font-bold uppercase tracking-widest text-xs">Total Clicks</span>
               </div>
               <div className="text-3xl font-black">
-                {links.reduce((acc: number, link: { clicks: number }) => acc + link.clicks, 0)}
+                {links.reduce((acc: number, link) => acc + link.clicks, 0)}
               </div>
             </div>
 
@@ -70,7 +89,7 @@ export default async function DashboardPage() {
             <div className="p-6 border-b border-white/10">
               <h2 className="text-xl font-bold">Your Recent Links</h2>
             </div>
-            
+
             {links.length === 0 ? (
               <div className="p-20 text-center">
                 <p className="text-gray-500 mb-6">You haven't created any links yet.</p>
@@ -84,46 +103,69 @@ export default async function DashboardPage() {
                       <th className="px-6 py-4 font-bold">Original URL</th>
                       <th className="px-6 py-4 font-bold">Short Link</th>
                       <th className="px-6 py-4 font-bold">Clicks</th>
+                      <th className="px-6 py-4 font-bold">Country</th>
+                      <th className="px-6 py-4 font-bold">Browser</th>
+                      <th className="px-6 py-4 font-bold">Device</th>
                       <th className="px-6 py-4 font-bold">Date</th>
                       <th className="px-6 py-4 font-bold"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {links.map((link: { id: string; originalUrl: string; shortCode: string; clicks: number; createdAt: Date }) => (
-                      <tr key={link.id} className="hover:bg-white/5 transition-colors">
-                        <td className="px-6 py-4 max-w-xs truncate text-gray-400 text-sm">
-                          {link.originalUrl}
-                        </td>
-                        <td className="px-6 py-4">
-                          <a 
-                            href={`/${link.shortCode}`} 
-                            target="_blank" 
-                            className="text-brand-blue font-bold hover:underline"
-                          >
-                            snipxr.com/{link.shortCode}
-                          </a>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="bg-white/10 px-3 py-1 rounded-full text-xs font-bold">
-                            {link.clicks}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-gray-500 text-sm">
-                          {new Date(link.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4">
-                          <form action={deleteLink.bind(null, link.id)}>
-                            <button
-                              type="submit"
-                              className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
-                              title="Delete link"
+                    {links.map((link) => {
+                      const topCountry = mostCommon(link.clickEvents.map(c => c.country));
+                      const topBrowser = mostCommon(link.clickEvents.map(c => c.browser));
+                      const topDevice  = mostCommon(link.clickEvents.map(c => c.device));
+                      const flag = COUNTRY_FLAGS[topCountry] ?? "";
+
+                      return (
+                        <tr key={link.id} className="hover:bg-white/5 transition-colors">
+                          <td className="px-6 py-4 max-w-xs truncate text-gray-400 text-sm">
+                            {link.originalUrl}
+                          </td>
+                          <td className="px-6 py-4">
+                            <a
+                              href={`/${link.shortCode}`}
+                              target="_blank"
+                              className="text-brand-blue font-bold hover:underline"
                             >
-                              <Trash size={16} />
-                            </button>
-                          </form>
-                        </td>
-                      </tr>
-                    ))}
+                              snipxr.com/{link.shortCode}
+                            </a>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="bg-white/10 px-3 py-1 rounded-full text-xs font-bold">
+                              {link.clicks}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-300">
+                            {topCountry === "—" ? (
+                              <span className="text-gray-600">—</span>
+                            ) : (
+                              <span>{flag} {topCountry}</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-300">
+                            {topBrowser === "—" ? <span className="text-gray-600">—</span> : topBrowser}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-300">
+                            {topDevice === "—" ? <span className="text-gray-600">—</span> : topDevice}
+                          </td>
+                          <td className="px-6 py-4 text-gray-500 text-sm">
+                            {new Date(link.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4">
+                            <form action={deleteLink.bind(null, link.id)}>
+                              <button
+                                type="submit"
+                                className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                                title="Delete link"
+                              >
+                                <Trash size={16} />
+                              </button>
+                            </form>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
