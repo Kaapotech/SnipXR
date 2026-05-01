@@ -1,45 +1,97 @@
-Analiza Planului tău pentru Producție
-Da, planul tău este absolut corect și reprezintă următorul pas logic pentru a transforma un prototip vizual într-o aplicație reală și funcțională. În acest moment, aplicația are "fațada" gata, dar îi lipsește "creierul" (logica de business) și "memoria" (baza de date).
-Iată o detaliere a punctelor menționate de tine și cum ar trebui implementate tehnic pentru a fi cu adevărat "production ready":
-1. Conectarea la o Bază de Date
-Pentru un proiect Next.js modern, recomandarea standard este utilizarea Prisma ORM împreună cu o bază de date precum PostgreSQL (poți folosi Supabase sau Neon pentru găzduire gratuită și rapidă).
-•
-De ce? Îți permite să definești structura datelor (tabelele) într-un mod clar și să interacționezi cu ele folosind TypeScript, evitând erorile de scriere manuală a SQL-ului.
-2. Autentificare și Sesiuni
-Pentru login și register, cel mai indicat este Auth.js (fostul NextAuth.js).
-•
-Cum funcționează: Acesta gestionează automat cookie-urile, sesiunile securizate și integrarea cu baza de date.
-•
-Social Login: Ai deja iconițele pentru Google și GitHub în design; Auth.js face activarea lor extrem de simplă.
-3. Stocarea Link-urilor
-În loc de generarea unui cod random care nu se salvează nicăieri (cum este acum în api/shorten/route.ts), va trebui să creezi un tabel Link în baza de date cu următoarele câmpuri:
-•
-id: Unic.
-•
-originalUrl: URL-ul lung introdus de utilizator.
-•
-shortCode: Codul de 6 caractere (ex: ab12cd).
-•
-userId: Legătura cu utilizatorul care l-a creat (pentru a-i arăta istoricul).
-•
-createdAt: Data creării.
-•
-expiresAt: Data expirării.
-4. Expirarea Link-urilor (30 de zile)
-Aceasta este o funcționalitate excelentă pentru a menține baza de date curată. Există două moduri de a face asta:
-•
-Verificare la accesare (Lazy): Când cineva dă click pe un link scurt, verifici dacă Date.now() > expiresAt. Dacă da, returnezi o pagină "Link expirat".
-•
-Cron Job (Pro-active): Configurezi un script care rulează o dată pe zi și șterge automat toate rândurile unde data de expirare a trecut.
-Ce mai lipsește pentru a fi 100% "Production Ready"?
-Pe lângă ce ai zis tu, aș mai adăuga:
-1.
-Rate Limiting: Să nu permiți unui singur utilizator (sau bot) să genereze 10.000 de link-uri pe secundă.
-2.
-Validare de Securitate: Verificarea URL-urilor împotriva bazelor de date cu phishing/malware (folosind Google Safe Browsing API).
-3.
-Analytics: Să poți vedea de câte ori a fost apăsat un link (un câmp clicks în tabelul Link).
-4.
-Custom Aliases: Posibilitatea ca utilizatorul să aleagă el numele link-ului (ex: snipxr.com/oferta-mea în loc de snipxr.com/xH2k9L).
-Concluzie
-Planul tău este corect și bine structurat. Dacă vrei să treci la implementare, următorul pas ar fi instalarea Prisma și configurarea bazei de date. Te descurci excelent!
+RAPORT PRODUCTION READINESS — SnipXR
+======================================
+Ultima actualizare: Aprilie 2026
+
+STARE CURENTA: Nu este production-ready inca.
+Aplicatia functioneaza, dar are probleme de securitate si UX care trebuie rezolvate inainte de lansare publica.
+
+
+======================================
+CE FUNCTIONEAZA ACUM
+======================================
+
+- Autentificare email + parola (cu bcrypt, parola hashata corect)
+- Autentificare GitHub OAuth
+- Inregistrare cont nou
+- Scurtare linkuri si redirect catre URL original
+- Numarare click-uri (analytics de baza)
+- Dashboard cu istoricul linkurilor utilizatorului
+- Generator QR code (frontend)
+- Deploy automat pe Vercel cu prisma generate
+
+
+======================================
+PROBLEME CRITICE (rezolva inainte de lansare)
+======================================
+
+1. SECRETE EXPUSE
+   - NEXTAUTH_SECRET este un string slab si a fost expus.
+     Inlocuieste-l cu: openssl rand -base64 32
+   - Credentialele GitHub OAuth si parola bazei de date au fost expuse in istoric.
+     Regenereaza-le imediat din GitHub Developer Settings si Supabase Dashboard.
+
+2. FARA RATE LIMITING
+   - Oricine poate trimite mii de requesturi pe secunda la:
+     /api/shorten       → spam link-uri
+     /api/auth/register → spam conturi
+   - Solutie: middleware cu rate limiting (ex: @upstash/ratelimit sau vercel/kv)
+
+3. NEXTAUTH_URL in Vercel
+   - Trebuie sa fie URL-ul exact al site-ului de productie (ex: https://snipxr.com)
+   - Daca e gresit, sesiunile nu persista si utilizatorii sunt delogati la refresh.
+
+
+======================================
+PROBLEME MEDII (importante pentru UX)
+======================================
+
+4. NU EXISTA DELETE LINK
+   - Utilizatorul nu poate sterge linkurile create din dashboard.
+
+5. LOGIN CU GOOGLE NON-FUNCTIONAL
+   - GOOGLE_CLIENT_ID si GOOGLE_CLIENT_SECRET nu sunt configurate in Vercel.
+   - Butonul Google apare, dar nu face nimic util.
+
+6. LINKURI FARA CONT NU APAR IN DASHBOARD
+   - Linkurile create fara a fi logat au userId = null si nu sunt asociate contului.
+
+7. FARA VERIFICARE EMAIL
+   - Oricine poate crea cont cu orice adresa de email fara confirmare.
+   - Risc de spam si conturi false.
+
+8. RACE CONDITION LA GENERARE COD
+   - Daca doua requesturi simultane genereaza acelasi cod scurt,
+     unul din ele va da eroare de baza de date.
+   - Solutie: retry logic sau generare UUID unica.
+
+
+======================================
+FEATURES LIPSA (pentru versiunea completa)
+======================================
+
+- Stergere linkuri din dashboard
+- Expirare automata a linkurilor (ex: dupa 30 de zile)
+- Custom aliases (ex: snipxr.com/oferta-mea)
+- Verificare URL impotriva bazelor de date phishing (Google Safe Browsing API)
+- Analytics avansate (tara, browser, dispozitiv)
+- Pagina de profil utilizator
+
+
+======================================
+REZUMAT PRIORITATI
+======================================
+
+Prioritate 1 — URGENT (securitate):
+  [ ] Regenereaza toate secretele expuse
+  [ ] Adauga rate limiting pe /api/shorten si /api/auth/register
+  [ ] Verifica NEXTAUTH_URL in Vercel
+
+Prioritate 2 — UX de baza:
+  [ ] Implementeaza delete link in dashboard
+  [ ] Configureaza Google OAuth in Vercel
+
+Prioritate 3 — Calitate si completitudine:
+  [ ] Verificare email la inregistrare
+  [ ] Expirare linkuri
+  [ ] Custom aliases
+

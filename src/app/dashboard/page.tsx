@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import db from "@/lib/db";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Link as LinkIcon, CursorClick, Calendar } from "@phosphor-icons/react/dist/ssr";
+import { Link as LinkIcon, CursorClick, Calendar, Trash } from "@phosphor-icons/react/dist/ssr";
+import { deleteLink } from "./actions";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -84,6 +85,7 @@ export default async function DashboardPage() {
                       <th className="px-6 py-4 font-bold">Short Link</th>
                       <th className="px-6 py-4 font-bold">Clicks</th>
                       <th className="px-6 py-4 font-bold">Date</th>
+                      <th className="px-6 py-4 font-bold"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
@@ -108,6 +110,17 @@ export default async function DashboardPage() {
                         </td>
                         <td className="px-6 py-4 text-gray-500 text-sm">
                           {new Date(link.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4">
+                          <form action={deleteLink.bind(null, link.id)}>
+                            <button
+                              type="submit"
+                              className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                              title="Delete link"
+                            >
+                              <Trash size={16} />
+                            </button>
+                          </form>
                         </td>
                       </tr>
                     ))}
