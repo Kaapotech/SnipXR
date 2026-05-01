@@ -21,6 +21,8 @@ CE FUNCTIONEAZA ACUM
 - Deploy automat pe Vercel cu prisma generate
 - Rate limiting in-memory pe /api/shorten si /api/auth/register
   (functional pe localhost; pe Vercel necesita Redis — vezi sectiunea de mai jos)
+- Analytics per link in dashboard: tara (cel mai frecvent), browser, dispozitiv
+  (tara detectata automat din x-vercel-ip-country pe Vercel; Unknown pe localhost)
 
 
 ======================================
@@ -118,7 +120,7 @@ FEATURES LIPSA (pentru versiunea completa)
 - Expirare automata a linkurilor (ex: dupa 30 de zile)
 - Custom aliases (ex: snipxr.com/oferta-mea)
 - Verificare URL impotriva bazelor de date phishing (Google Safe Browsing API)
-- Analytics avansate (tara, browser, dispozitiv)
+- Analytics detaliate per click (istoric complet, grafice, breakdown pe tari)
 - Pagina de profil utilizator
 
 
