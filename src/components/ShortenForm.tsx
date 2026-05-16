@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LinkSimple, Copy, Check, WarningCircle } from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,13 @@ export default function ShortenForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [requiresAccount, setRequiresAccount] = useState(false);
+  const [usage, setUsage] = useState<{ used: number; limit: number } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/usage')
+      .then(r => r.json())
+      .then(data => setUsage(data.links));
+  }, []);
 
   const validateUrl = (string: string) => {
     try {
@@ -54,6 +61,7 @@ export default function ShortenForm() {
         const saved = JSON.parse(localStorage.getItem("anon_links") ?? "[]");
         saved.push(data.code);
         localStorage.setItem("anon_links", JSON.stringify(saved));
+        fetch('/api/usage').then(r => r.json()).then(d => setUsage(d.links));
       }
     } catch (err: any) {
       setError(err.message || "Failed to shorten link");
@@ -84,9 +92,22 @@ export default function ShortenForm() {
             <div className="p-3 bg-brand-blue/10 rounded-2xl w-fit">
               <LinkSimple size={32} weight="bold" className="text-brand-blue" />
             </div>
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white">Shorten Link</h2>
-              <p className="text-gray-400 text-sm md:text-base">Transform your long URLs into bite-sized links</p>
+            <div className="flex-1 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-white">Shorten Link</h2>
+                <p className="text-gray-400 text-sm md:text-base">Transform your long URLs into bite-sized links</p>
+              </div>
+              {usage && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className={cn(
+                    "font-bold",
+                    usage.used >= usage.limit ? "text-red-400" : "text-brand-blue"
+                  )}>
+                    {usage.used} / {usage.limit}
+                  </span>
+                  <span className="text-gray-500">links{usage.limit === 5 ? " this month" : " total"}</span>
+                </div>
+              )}
             </div>
           </div>
 

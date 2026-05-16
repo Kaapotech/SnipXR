@@ -28,15 +28,23 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const links = await db.link.findMany({
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const [links, linksThisMonth, qrThisMonth] = await Promise.all([
+    db.link.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
-    include: {
-      clickEvents: {
-        select: { country: true, browser: true, device: true },
+      include: {
+        clickEvents: {
+          select: { country: true, browser: true, device: true },
+        },
       },
-    },
-  });
+    }),
+    db.link.count({ where: { userId: session.user.id, createdAt: { gte: startOfMonth } } }),
+    db.qrUsage.count({ where: { userId: session.user.id, createdAt: { gte: startOfMonth } } }),
+  ]);
 
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
@@ -49,7 +57,7 @@ export default async function DashboardPage() {
             <p className="text-gray-400">Manage your shortened links and track their performance.</p>
           </header>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
               <div className="flex items-center gap-4 mb-4">
                 <div className="p-3 bg-brand-blue/20 rounded-2xl">
@@ -81,6 +89,30 @@ export default async function DashboardPage() {
               </div>
               <div className="text-3xl font-black text-lg">
                 {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </div>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-3 bg-brand-blue/20 rounded-2xl">
+                  <LinkIcon size={24} className="text-brand-blue" />
+                </div>
+                <span className="text-gray-400 font-bold uppercase tracking-widest text-xs">Links This Month</span>
+              </div>
+              <div className={`text-3xl font-black ${linksThisMonth >= 5 ? 'text-red-400' : 'text-white'}`}>
+                {linksThisMonth} <span className="text-gray-500 text-lg font-normal">/ 5</span>
+              </div>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-3 bg-brand-magenta/20 rounded-2xl">
+                  <CursorClick size={24} className="text-brand-magenta" />
+                </div>
+                <span className="text-gray-400 font-bold uppercase tracking-widest text-xs">QR Downloads</span>
+              </div>
+              <div className={`text-3xl font-black ${qrThisMonth >= 3 ? 'text-red-400' : 'text-white'}`}>
+                {qrThisMonth} <span className="text-gray-500 text-lg font-normal">/ 3</span>
               </div>
             </div>
           </div>

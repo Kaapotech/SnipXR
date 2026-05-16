@@ -1,13 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { QrCode, DownloadSimple } from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
+import { cn } from '@/lib/utils';
 
 export default function QRGenerator() {
   const [text, setText] = useState('');
   const [qrError, setQrError] = useState<string | null>(null);
+  const [qrUsage, setQrUsage] = useState<{ used: number; limit: number } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/usage')
+      .then(r => r.json())
+      .then(data => { if (data.qr) setQrUsage(data.qr); });
+  }, []);
 
   const downloadQR = async () => {
     setQrError(null);
@@ -17,6 +25,7 @@ export default function QRGenerator() {
       setQrError(data.error ?? 'Download limit reached.');
       return;
     }
+    fetch('/api/usage').then(r => r.json()).then(d => { if (d.qr) setQrUsage(d.qr); });
 
     const svg = document.getElementById('qr-code-svg');
     if (!svg) return;
@@ -50,9 +59,22 @@ export default function QRGenerator() {
             <div className="p-3 bg-brand-magenta/10 rounded-2xl w-fit">
               <QrCode size={32} weight="bold" className="text-brand-magenta" />
             </div>
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white">QR Code Generator</h2>
-              <p className="text-gray-400 text-sm md:text-base">Generate high-quality QR codes for your links</p>
+            <div className="flex-1 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-white">QR Code Generator</h2>
+                <p className="text-gray-400 text-sm md:text-base">Generate high-quality QR codes for your links</p>
+              </div>
+              {qrUsage && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className={cn(
+                    "font-bold",
+                    qrUsage.used >= qrUsage.limit ? "text-red-400" : "text-brand-magenta"
+                  )}>
+                    {qrUsage.used} / {qrUsage.limit}
+                  </span>
+                  <span className="text-gray-500">downloads this month</span>
+                </div>
+              )}
             </div>
           </div>
 
