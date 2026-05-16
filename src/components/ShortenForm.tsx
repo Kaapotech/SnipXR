@@ -12,7 +12,7 @@ export default function ShortenForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [requiresAccount, setRequiresAccount] = useState(false);
-  const [usage, setUsage] = useState<{ used: number; limit: number } | null>(null);
+  const [usage, setUsage] = useState<{ used: number; limit: number; period?: string } | null>(null);
 
   useEffect(() => {
     fetch('/api/usage')
@@ -105,7 +105,7 @@ export default function ShortenForm() {
                   )}>
                     {usage.used} / {usage.limit}
                   </span>
-                  <span className="text-gray-500">links{usage.limit === 5 ? " this month" : " total"}</span>
+                  <span className="text-gray-500">links{usage.period === 'monthly' ? " this month" : " total"}</span>
                 </div>
               )}
             </div>

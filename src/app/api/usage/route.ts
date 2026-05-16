@@ -4,9 +4,9 @@ import { authOptions } from "@/lib/auth";
 import db from "@/lib/db";
 import { redis, getClientIp } from "@/lib/rate-limit";
 
-const ANON_LINK_LIMIT = 3;
-const USER_LINK_LIMIT = 5;
-const QR_LIMIT = 3;
+const ANON_LINK_LIMIT = 5;
+const USER_LINK_LIMIT = 15;
+const QR_LIMIT = 5;
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     ]);
 
     return NextResponse.json({
-      links: { used: linksUsed, limit: USER_LINK_LIMIT },
+      links: { used: linksUsed, limit: USER_LINK_LIMIT, period: 'monthly' },
       qr: { used: qrUsed, limit: QR_LIMIT },
     });
   }
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
   const linksUsed = await redis.get<number>(`anon:links:${ip}`) ?? 0;
 
   return NextResponse.json({
-    links: { used: linksUsed, limit: ANON_LINK_LIMIT },
+    links: { used: linksUsed, limit: ANON_LINK_LIMIT, period: 'total' },
     qr: null,
   });
 }

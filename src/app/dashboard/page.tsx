@@ -99,8 +99,8 @@ export default async function DashboardPage() {
                 </div>
                 <span className="text-gray-400 font-bold uppercase tracking-widest text-xs">Links This Month</span>
               </div>
-              <div className={`text-3xl font-black ${linksThisMonth >= 5 ? 'text-red-400' : 'text-white'}`}>
-                {linksThisMonth} <span className="text-gray-500 text-lg font-normal">/ 5</span>
+              <div className={`text-3xl font-black ${linksThisMonth >= 15 ? 'text-red-400' : 'text-white'}`}>
+                {linksThisMonth} <span className="text-gray-500 text-lg font-normal">/ 15</span>
               </div>
             </div>
 
@@ -111,8 +111,8 @@ export default async function DashboardPage() {
                 </div>
                 <span className="text-gray-400 font-bold uppercase tracking-widest text-xs">QR Downloads</span>
               </div>
-              <div className={`text-3xl font-black ${qrThisMonth >= 3 ? 'text-red-400' : 'text-white'}`}>
-                {qrThisMonth} <span className="text-gray-500 text-lg font-normal">/ 3</span>
+              <div className={`text-3xl font-black ${qrThisMonth >= 5 ? 'text-red-400' : 'text-white'}`}>
+                {qrThisMonth} <span className="text-gray-500 text-lg font-normal">/ 5</span>
               </div>
             </div>
           </div>

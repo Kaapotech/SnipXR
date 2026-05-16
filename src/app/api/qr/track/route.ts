@@ -21,7 +21,7 @@ export async function POST() {
 
   if (count >= QR_LIMIT) {
     return NextResponse.json(
-      { allowed: false, error: "You've reached your 3 QR downloads/month limit.", limitReached: true },
+      { allowed: false, error: "You've reached your 5 QR downloads/month limit.", limitReached: true },
       { status: 403 }
     );
   }
