@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     }
 
     const origin = new URL(request.url).origin;
-    const shortUrl = `${origin}/${code}`;
+    const shortUrl = `${origin}/${newLink.shortCode}`;
 
     return NextResponse.json({ shortUrl, code: newLink.shortCode });
   } catch (error) {
