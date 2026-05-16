@@ -4,8 +4,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { shortenLimiter, getClientIp, redis } from "@/lib/rate-limit";
 
-const ANON_LINK_LIMIT = 3;
-const USER_LINK_LIMIT = 5;
+const ANON_LINK_LIMIT = 5;
+const USER_LINK_LIMIT = 15;
 
 // Funcție utilă pentru validarea URL-urilor pe server
 function isValidUrl(url: string) {
@@ -83,8 +83,8 @@ export async function POST(request: Request) {
           },
         });
         break;
-      } catch (e: any) {
-        if (e.code !== 'P2002') throw e;
+      } catch (e: unknown) {
+        if ((e as { code?: string }).code !== 'P2002') throw e;
         // cod duplicat — reincercam cu un cod nou
       }
     }

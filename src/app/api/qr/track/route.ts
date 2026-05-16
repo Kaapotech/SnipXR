@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import db from "@/lib/db";
 
-const QR_LIMIT = 3;
+const QR_LIMIT = 5;
 
 export async function POST() {
   const session = await getServerSession(authOptions);
