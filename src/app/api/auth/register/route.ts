@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import bcrypt from "bcryptjs";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { registerLimiter, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
-  const limited = checkRateLimit(
-    `${getClientIp(request)}:register`,
-    { limit: 5, windowMs: 15 * 60_000 }
+  const { success } = await registerLimiter.limit(getClientIp(request));
+  if (!success) return new Response(
+    JSON.stringify({ error: "Too many requests. Please try again later." }),
+    { status: 429, headers: { "Content-Type": "application/json" } }
   );
-  if (limited) return limited;
 
   try {
     const { name, email, password } = await request.json();

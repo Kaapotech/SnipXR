@@ -130,7 +130,7 @@ REZUMAT PRIORITATI
 
 Prioritate 1 — URGENT (securitate):
   [ ] Regenereaza toate secretele expuse
-  [ ] Migreaza rate limiting la Upstash Redis (vezi sectiunea 2 de mai sus)
+  [x] Migreaza rate limiting la Upstash Redis (vezi sectiunea 2 de mai sus)
   [ ] Verifica NEXTAUTH_URL in Vercel
 
 Prioritate 2 — UX de baza:

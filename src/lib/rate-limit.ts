@@ -1,53 +1,22 @@
-interface RateLimitEntry {
-  count: number;
-  resetAt: number;
-}
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
-const store = new Map<string, RateLimitEntry>();
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
-export interface RateLimitConfig {
-  /** Max requests allowed in the window */
-  limit: number;
-  /** Window duration in milliseconds */
-  windowMs: number;
-}
+export const shortenLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, "1 m"),
+  prefix: "rl:shorten",
+});
 
-/**
- * Returns null if the request is allowed, or a Response with 429 if rate limited.
- * Key is typically `${ip}:${routeId}`.
- */
-export function checkRateLimit(
-  key: string,
-  config: RateLimitConfig
-): Response | null {
-  const now = Date.now();
-  const entry = store.get(key);
-
-  if (!entry || now >= entry.resetAt) {
-    store.set(key, { count: 1, resetAt: now + config.windowMs });
-    return null;
-  }
-
-  if (entry.count >= config.limit) {
-    const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
-    return new Response(
-      JSON.stringify({ error: "Too many requests. Please try again later." }),
-      {
-        status: 429,
-        headers: {
-          "Content-Type": "application/json",
-          "Retry-After": String(retryAfter),
-          "X-RateLimit-Limit": String(config.limit),
-          "X-RateLimit-Remaining": "0",
-          "X-RateLimit-Reset": String(Math.ceil(entry.resetAt / 1000)),
-        },
-      }
-    );
-  }
-
-  entry.count++;
-  return null;
-}
+export const registerLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(5, "15 m"),
+  prefix: "rl:register",
+});
 
 export function getClientIp(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { shortenLimiter, getClientIp } from "@/lib/rate-limit";
 
 // Funcție utilă pentru validarea URL-urilor pe server
 function isValidUrl(url: string) {
@@ -15,11 +15,11 @@ function isValidUrl(url: string) {
 }
 
 export async function POST(request: Request) {
-  const limited = checkRateLimit(
-    `${getClientIp(request)}:shorten`,
-    { limit: 10, windowMs: 60_000 }
+  const { success } = await shortenLimiter.limit(getClientIp(request));
+  if (!success) return new Response(
+    JSON.stringify({ error: "Too many requests. Please try again later." }),
+    { status: 429, headers: { "Content-Type": "application/json" } }
   );
-  if (limited) return limited;
 
   try {
     const session = await getServerSession(authOptions);

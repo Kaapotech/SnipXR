@@ -48,6 +48,9 @@ export default function ShortenForm() {
 
       if (data.shortUrl) {
         setShortened(data.shortUrl);
+        const saved = JSON.parse(localStorage.getItem("anon_links") ?? "[]");
+        saved.push(data.code);
+        localStorage.setItem("anon_links", JSON.stringify(saved));
       }
     } catch (err: any) {
       setError(err.message || "Failed to shorten link");

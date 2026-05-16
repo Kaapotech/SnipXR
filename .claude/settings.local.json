@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(grep -E \"^pg$|adapter-pg|adapter-pg$\")",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(grep -r \"seed\\\\|default.*user\\\\|admin\" /c/Users/comic/Desktop/link_shortener/src --include=*.ts --include=*.tsx --include=*.js)"
     ]
   }
 }
