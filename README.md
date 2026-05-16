@@ -13,6 +13,7 @@ A full-stack link shortener built with Next.js 16, PostgreSQL (Supabase), and Ne
 - **Dashboard** — view, manage, and delete your links with analytics breakdown
 - **Anonymous link claiming** — links created without an account are automatically associated after login
 - **Rate limiting** — powered by Upstash Redis (10 req/min on `/api/shorten`, 5 req/15min on `/api/auth/register`)
+- **Usage limits** — anonymous users: 3 links total (tracked by IP in Redis); logged-in users: 5 links/month + 3 QR downloads/month
 
 ## Tech Stack
 
@@ -120,12 +121,14 @@ prisma/
 | POST | `/api/shorten` | Create a shortened link | 10 req/min |
 | POST | `/api/auth/register` | Register a new account | 5 req/15min |
 | POST | `/api/links/claim` | Associate anonymous links with account | — |
+| POST | `/api/qr/track` | Record a QR download and check monthly limit | — |
 
 ## Database Schema
 
 - **User** — id, name, email, password (hashed), emailVerified, image
 - **Link** — id, originalUrl, shortCode (unique), clicks, userId, createdAt, expiresAt
 - **ClickEvent** — linkId, country, browser, device, createdAt
+- **QrUsage** — userId, createdAt (tracks monthly QR downloads per user)
 - **Account** — OAuth provider accounts (GitHub, Google)
 - **Session** — JWT sessions
 - **VerificationToken** — email verification tokens (prepared, not yet active)
