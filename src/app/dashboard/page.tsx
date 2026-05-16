@@ -107,6 +107,7 @@ export default async function DashboardPage() {
                       <th className="px-6 py-4 font-bold">Browser</th>
                       <th className="px-6 py-4 font-bold">Device</th>
                       <th className="px-6 py-4 font-bold">Date</th>
+                      <th className="px-6 py-4 font-bold">Expires</th>
                       <th className="px-6 py-4 font-bold"></th>
                     </tr>
                   </thead>
@@ -151,6 +152,17 @@ export default async function DashboardPage() {
                           </td>
                           <td className="px-6 py-4 text-gray-500 text-sm">
                             {new Date(link.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 text-sm">
+                            {link.expiresAt ? (
+                              link.expiresAt < new Date() ? (
+                                <span className="text-red-400">Expired</span>
+                              ) : (
+                                <span className="text-gray-400">{new Date(link.expiresAt).toLocaleDateString()}</span>
+                              )
+                            ) : (
+                              <span className="text-gray-600">—</span>
+                            )}
                           </td>
                           <td className="px-6 py-4">
                             <form action={deleteLink.bind(null, link.id)}>

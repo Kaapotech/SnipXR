@@ -19,7 +19,7 @@ export default async function RedirectPage({ params }: Props) {
       where: { shortCode: code }
     });
 
-    if (linkData) {
+    if (linkData && (!linkData.expiresAt || linkData.expiresAt > new Date())) {
       const headersList = await headers();
       const ua = headersList.get('user-agent') ?? '';
       const country = headersList.get('x-vercel-ip-country') ?? 'Unknown';

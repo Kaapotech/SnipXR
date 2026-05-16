@@ -33,24 +33,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
     }
 
-    // Generăm un cod unic de 6 caractere
-    let code = Math.random().toString(36).substring(2, 8);
-    
-    // Verificăm dacă codul există deja
-    let exists = await db.link.findUnique({ where: { shortCode: code } });
-    while (exists) {
-      code = Math.random().toString(36).substring(2, 8);
-      exists = await db.link.findUnique({ where: { shortCode: code } });
-    }
+    // Generăm un cod unic de 6 caractere cu retry pe conflict
+    let newLink;
+    while (true) {
+      const code = Math.random().toString(36).substring(2, 8);
+      try {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 30);
 
-    // Salvăm în baza de date, asociind userId dacă utilizatorul este logat
-    const newLink = await db.link.create({
-      data: {
-        originalUrl: url,
-        shortCode: code,
-        userId: session?.user?.id || null, // Dacă e logat, salvăm ID-ul
+        newLink = await db.link.create({
+          data: {
+            originalUrl: url,
+            shortCode: code,
+            userId: session?.user?.id || null,
+            expiresAt,
+          },
+        });
+        break;
+      } catch (e: any) {
+        if (e.code !== 'P2002') throw e;
+        // cod duplicat — reincercam cu un cod nou
       }
-    });
+    }
 
     const origin = new URL(request.url).origin;
     const shortUrl = `${origin}/${code}`;
