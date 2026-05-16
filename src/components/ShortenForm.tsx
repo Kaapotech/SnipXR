@@ -11,6 +11,7 @@ export default function ShortenForm() {
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [requiresAccount, setRequiresAccount] = useState(false);
 
   const validateUrl = (string: string) => {
     try {
@@ -24,6 +25,7 @@ export default function ShortenForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setRequiresAccount(false);
 
     if (!url) return;
     
@@ -43,6 +45,7 @@ export default function ShortenForm() {
       const data = await response.json();
       
       if (!response.ok) {
+        if (data.requiresAccount) setRequiresAccount(true);
         throw new Error(data.error || 'Something went wrong');
       }
 
@@ -109,13 +112,23 @@ export default function ShortenForm() {
               </button>
             </div>
             {error && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-2 text-red-400 text-sm mt-2"
+                className="flex flex-col gap-2 mt-2"
               >
-                <WarningCircle size={16} weight="fill" />
-                <span>{error}</span>
+                <div className="flex items-center gap-2 text-red-400 text-sm">
+                  <WarningCircle size={16} weight="fill" />
+                  <span>{error}</span>
+                </div>
+                {requiresAccount && (
+                  <a
+                    href="/register"
+                    className="text-sm font-bold text-brand-blue hover:underline"
+                  >
+                    Create a free account →
+                  </a>
+                )}
               </motion.div>
             )}
           </form>

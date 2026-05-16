@@ -7,8 +7,17 @@ import { QRCodeSVG } from 'qrcode.react';
 
 export default function QRGenerator() {
   const [text, setText] = useState('');
+  const [qrError, setQrError] = useState<string | null>(null);
 
-  const downloadQR = () => {
+  const downloadQR = async () => {
+    setQrError(null);
+    const res = await fetch('/api/qr/track', { method: 'POST' });
+    if (!res.ok) {
+      const data = await res.json();
+      setQrError(data.error ?? 'Download limit reached.');
+      return;
+    }
+
     const svg = document.getElementById('qr-code-svg');
     if (!svg) return;
     const svgData = new XMLSerializer().serializeToString(svg);
@@ -60,13 +69,18 @@ export default function QRGenerator() {
                 />
               </div>
               {text && (
-                <button
-                  onClick={downloadQR}
-                  className="w-full bg-brand-magenta hover:bg-brand-magenta/90 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95"
-                >
-                  <DownloadSimple size={20} weight="bold" />
-                  Download PNG
-                </button>
+                <>
+                  <button
+                    onClick={downloadQR}
+                    className="w-full bg-brand-magenta hover:bg-brand-magenta/90 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95"
+                  >
+                    <DownloadSimple size={20} weight="bold" />
+                    Download PNG
+                  </button>
+                  {qrError && (
+                    <p className="text-red-400 text-sm text-center">{qrError}</p>
+                  )}
+                </>
               )}
             </div>
 
