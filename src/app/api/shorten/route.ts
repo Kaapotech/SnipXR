@@ -48,19 +48,19 @@ export async function POST(request: Request) {
 
       if (count >= USER_LINK_LIMIT) {
         return NextResponse.json(
-          { error: "You've reached your 5 links/month limit.", limitReached: true },
+          { error: "You've reached your 15 links/month limit.", limitReached: true },
           { status: 403 }
         );
       }
     } else {
-      // Anonim: max 3 linkuri total
+      // Anonim: max 5 linkuri total
       const ip = getClientIp(request);
       const key = `anon:links:${ip}`;
       const count = await redis.get<number>(key) ?? 0;
 
       if (count >= ANON_LINK_LIMIT) {
         return NextResponse.json(
-          { error: "You've reached the 3-link limit. Create a free account to get more.", limitReached: true, requiresAccount: true },
+          { error: "You've reached the 5-link limit. Create a free account to get more.", limitReached: true, requiresAccount: true },
           { status: 403 }
         );
       }
