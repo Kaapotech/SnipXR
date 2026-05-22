@@ -15,14 +15,22 @@ CE FUNCTIONEAZA ACUM
 - Inregistrare cont nou
 - Scurtare linkuri si redirect catre URL original
 - Numarare click-uri (analytics de baza)
-- Dashboard cu istoricul linkurilor utilizatorului
+- Dashboard cu istoricul linkurilor utilizatorului (acces doar plan Pro)
 - Stergere linkuri din dashboard (Server Action cu verificare ownership)
-- Generator QR code (frontend)
+- Generator QR code (accesibil doar utilizatorilor logati)
 - Deploy automat pe Vercel cu prisma generate
-- Rate limiting in-memory pe /api/shorten si /api/auth/register
-  (functional pe localhost; pe Vercel necesita Redis — vezi sectiunea de mai jos)
+- Rate limiting cu Upstash Redis pe /api/shorten si /api/auth/register
 - Analytics per link in dashboard: tara (cel mai frecvent), browser, dispozitiv
   (tara detectata automat din x-vercel-ip-country pe Vercel; Unknown pe localhost)
+- Sistem de planuri Free / Pro (camp plan pe User, default "free")
+- Pagina /plans cu comparatie Free vs Pro
+- Buton Upgrade in Navbar (vizibil cand esti logat)
+- Templates accesibil doar utilizatorilor Pro (redirect la /plans altfel)
+- Dashboard accesibil doar utilizatorilor Pro (redirect la /plans altfel)
+- Navbar cu lock icon si tooltip "Necesita plan Pro" pe Dashboard si Templates pentru useri free
+- Click pe link locked in Navbar redirectioneaza la /plans
+- Linkuri anonime claimed la login se numara in limita lunara de 15 (nu se poate ocoli limita)
+- Mesaje de eroare corecte: 5 linkuri anonim, 15 linkuri/luna cont free, 5 QR/luna
 
 
 ======================================
@@ -136,10 +144,18 @@ Prioritate 1 — URGENT (securitate):
 Prioritate 2 — UX de baza:
   [ ] Configureaza Google OAuth in Vercel
   ✅ Linkuri fara cont revendicate automat la login
+  ✅ Linkuri claimed numara in limita lunara (nu se poate ocoli limita de 15)
 
 Prioritate 3 — Calitate si completitudine:
   [ ] Verificare email la inregistrare
   ✅ Race condition la generare cod (retry on P2002)
   ✅ Expirare linkuri (30 zile, expiresAt in DB)
   [ ] Custom aliases
+
+Prioritate 4 — Monetizare:
+  ✅ Sistem planuri Free / Pro (camp plan in DB, sesiune, verificari server-side)
+  ✅ Pagina /plans cu optiuni de abonament
+  ✅ Restrictii acces pe Dashboard si Templates pentru plan Free
+  ✅ Navbar cu indicatori vizuali (lock + tooltip) pentru functii Pro
+  [ ] Integrare Stripe pentru plati (planul Pro e "Coming Soon")
 
