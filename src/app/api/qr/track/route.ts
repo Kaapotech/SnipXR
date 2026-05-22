@@ -8,7 +8,10 @@ const QR_LIMIT = 5;
 export async function POST() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return NextResponse.json({ allowed: true });
+    return NextResponse.json(
+      { allowed: false, error: "You must be logged in to download QR codes." },
+      { status: 401 }
+    );
   }
 
   const startOfMonth = new Date();

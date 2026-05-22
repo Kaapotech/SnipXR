@@ -1,21 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { QrCode, DownloadSimple } from '@phosphor-icons/react';
+import { QrCode, DownloadSimple, Lock } from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { cn } from '@/lib/utils';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 export default function QRGenerator() {
+  const { data: session, status } = useSession();
   const [text, setText] = useState('');
   const [qrError, setQrError] = useState<string | null>(null);
   const [qrUsage, setQrUsage] = useState<{ used: number; limit: number } | null>(null);
 
   useEffect(() => {
+    if (!session) return;
     fetch('/api/usage')
       .then(r => r.json())
       .then(data => { if (data.qr) setQrUsage(data.qr); });
-  }, []);
+  }, [session]);
 
   const downloadQR = async () => {
     setQrError(null);
@@ -46,9 +50,56 @@ export default function QRGenerator() {
     img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
   };
 
+  if (status === 'loading') {
+    return (
+      <section className="py-12 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-dark-gray rounded-3xl p-6 md:p-12 shadow-2xl border border-brand-magenta/20 animate-pulse min-h-[300px]" />
+        </div>
+      </section>
+    );
+  }
+
+  if (!session) {
+    return (
+      <section className="py-12 px-4">
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-4xl mx-auto"
+        >
+          <div className="bg-dark-gray rounded-3xl p-6 md:p-12 shadow-2xl border border-brand-magenta/20 flex flex-col items-center justify-center gap-6 min-h-[300px] text-center">
+            <div className="p-4 bg-brand-magenta/10 rounded-2xl">
+              <Lock size={40} weight="bold" className="text-brand-magenta" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">Login required</h2>
+              <p className="text-gray-400">You need an account to generate QR codes.</p>
+            </div>
+            <div className="flex gap-3">
+              <Link
+                href="/login"
+                className="bg-brand-magenta hover:bg-brand-magenta/90 text-white font-bold px-6 py-3 rounded-2xl transition-all"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/register"
+                className="border border-brand-magenta/50 hover:border-brand-magenta text-white font-bold px-6 py-3 rounded-2xl transition-all"
+              >
+                Sign up free
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-12 px-4">
-      <motion.div 
+      <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}

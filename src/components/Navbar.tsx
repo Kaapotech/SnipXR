@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Lightning, List, X, User as UserIcon, SignOut } from '@phosphor-icons/react';
+import { Lightning, List, X, User as UserIcon, SignOut, Crown } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -83,12 +83,19 @@ export default function Navbar() {
 
         <div className="flex items-center gap-2 md:gap-4">
           {session ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-3">
+              <Link
+                href="/plans"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-black bg-gradient-to-r from-brand-magenta to-brand-yellow text-white hover:opacity-90 transition-all active:scale-95"
+              >
+                <Crown size={13} weight="fill" />
+                Upgrade
+              </Link>
               <div className="hidden sm:flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2 rounded-full">
                 <UserIcon size={16} className="text-brand-blue" />
                 <span className="text-xs font-bold text-gray-300">{session.user?.name || session.user?.email?.split('@')[0]}</span>
               </div>
-              <button 
+              <button
                 onClick={() => signOut()}
                 className="p-2.5 bg-white/5 hover:bg-red-500/10 hover:text-red-500 border border-white/10 rounded-full transition-all active:scale-95"
                 title="Sign Out"
@@ -158,12 +165,22 @@ export default function Navbar() {
               )}
 
               {session ? (
-                <button 
-                  onClick={() => signOut()}
-                  className="mt-2 w-full py-4 rounded-2xl font-black text-center bg-red-500/10 text-red-500 border border-red-500/20 active:scale-95 transition-all"
-                >
-                  Sign Out
-                </button>
+                <>
+                  <Link
+                    href="/plans"
+                    onClick={handleLinkClick}
+                    className="w-full py-4 rounded-2xl font-black text-center bg-gradient-to-r from-brand-magenta to-brand-yellow text-white active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Crown size={18} weight="fill" />
+                    Upgrade Plan
+                  </Link>
+                  <button
+                    onClick={() => signOut()}
+                    className="mt-2 w-full py-4 rounded-2xl font-black text-center bg-red-500/10 text-red-500 border border-red-500/20 active:scale-95 transition-all"
+                  >
+                    Sign Out
+                  </button>
+                </>
               ) : (
                 <Link 
                   href="/login"
