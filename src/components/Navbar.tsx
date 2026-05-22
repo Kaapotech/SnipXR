@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Lightning, List, X, User as UserIcon, SignOut, Crown } from '@phosphor-icons/react';
+import { Lightning, List, X, User as UserIcon, SignOut, Crown, Lock } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -14,10 +14,12 @@ export default function Navbar() {
   const { data: session } = useSession();
 
   const tabs = [
-    { id: 'shorten', label: 'Link Shortener', href: '/link_shortener', color: 'hover:text-brand-blue', active: 'text-brand-blue' },
-    { id: 'qr', label: 'QR Generator', href: '/qr_codes', color: 'hover:text-brand-magenta', active: 'text-brand-magenta' },
-    { id: 'templates', label: 'Templates', href: '/templates', color: 'hover:text-brand-yellow', active: 'text-brand-yellow' },
+    { id: 'shorten', label: 'Link Shortener', href: '/link_shortener', color: 'hover:text-brand-blue', active: 'text-brand-blue', pro: false },
+    { id: 'qr', label: 'QR Generator', href: '/qr_codes', color: 'hover:text-brand-magenta', active: 'text-brand-magenta', pro: false },
+    { id: 'templates', label: 'Templates', href: '/templates', color: 'hover:text-brand-yellow', active: 'text-brand-yellow', pro: true },
   ];
+
+  const isPro = session?.user?.plan === 'pro';
 
   const handleLinkClick = () => {
     setIsMenuOpen(false);
@@ -55,29 +57,48 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
-          {tabs.map((tab) => (
-            <Link
-              key={tab.id}
-              href={tab.href}
-              className={cn(
-                "text-sm font-medium transition-colors",
-                pathname === tab.href ? tab.active : "text-gray-400",
-                tab.color
+          {tabs.map((tab) => {
+            const locked = tab.pro && session && !isPro;
+            return (
+              <div key={tab.id} className="relative group/navitem">
+                <Link
+                  href={tab.href}
+                  className={cn(
+                    "flex items-center gap-1.5 text-sm font-medium transition-colors",
+                    pathname === tab.href ? tab.active : "text-gray-400",
+                    locked ? "opacity-60" : tab.color
+                  )}
+                >
+                  {tab.label}
+                  {locked && <Lock size={11} weight="bold" className="text-gray-500" />}
+                </Link>
+                {locked && (
+                  <div className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1.5 bg-black border border-white/10 rounded-lg text-xs text-gray-300 whitespace-nowrap opacity-0 group-hover/navitem:opacity-100 transition-opacity z-50">
+                    Necesită plan Pro
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {session && (
+            <div className="relative group/navitem">
+              <Link
+                href="/dashboard"
+                className={cn(
+                  "flex items-center gap-1.5 text-sm font-medium transition-colors",
+                  pathname === "/dashboard" ? "text-white" : "text-gray-400",
+                  isPro ? "hover:text-white" : "opacity-60"
+                )}
+              >
+                Dashboard
+                {!isPro && <Lock size={11} weight="bold" className="text-gray-500" />}
+              </Link>
+              {!isPro && (
+                <div className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1.5 bg-black border border-white/10 rounded-lg text-xs text-gray-300 whitespace-nowrap opacity-0 group-hover/navitem:opacity-100 transition-opacity z-50">
+                  Necesită plan Pro
+                </div>
               )}
-            >
-              {tab.label}
-            </Link>
-          ))}
-          {session?.user?.plan === "pro" && (
-            <Link
-              href="/dashboard"
-              className={cn(
-                "text-sm font-medium transition-colors",
-                pathname === "/dashboard" ? "text-white" : "text-gray-400 hover:text-white"
-              )}
-            >
-              Dashboard
-            </Link>
+            </div>
           )}
         </div>
 
@@ -135,31 +156,42 @@ export default function Navbar() {
             className="md:hidden absolute top-20 left-0 right-0 bg-black/95 backdrop-blur-2xl border-b border-white/10 overflow-hidden"
           >
             <div className="p-6 flex flex-col gap-4">
-              {tabs.map((tab) => (
-                <Link
-                  key={tab.id}
-                  href={tab.href}
-                  onClick={handleLinkClick}
-                  className={cn(
-                    "w-full text-left px-4 py-4 rounded-2xl text-lg font-bold transition-all flex items-center justify-between",
-                    pathname === tab.href ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"
-                  )}
-                >
-                  {tab.label}
-                  {pathname === tab.href && <div className={cn("w-2 h-2 rounded-full", tab.active.replace('text-', 'bg-'))} />}
-                </Link>
-              ))}
-              
-              {session?.user?.plan === "pro" && (
+              {tabs.map((tab) => {
+                const locked = tab.pro && session && !isPro;
+                return (
+                  <Link
+                    key={tab.id}
+                    href={tab.href}
+                    onClick={handleLinkClick}
+                    className={cn(
+                      "w-full text-left px-4 py-4 rounded-2xl text-lg font-bold transition-all flex items-center justify-between",
+                      pathname === tab.href ? "bg-white/10 text-white" : "text-gray-400 hover:text-white",
+                      locked && "opacity-60"
+                    )}
+                  >
+                    <span className="flex items-center gap-2">
+                      {tab.label}
+                      {locked && <Lock size={14} weight="bold" className="text-gray-500" />}
+                    </span>
+                    {pathname === tab.href && <div className={cn("w-2 h-2 rounded-full", tab.active.replace('text-', 'bg-'))} />}
+                  </Link>
+                );
+              })}
+
+              {session && (
                 <Link
                   href="/dashboard"
                   onClick={handleLinkClick}
                   className={cn(
                     "w-full text-left px-4 py-4 rounded-2xl text-lg font-bold transition-all flex items-center justify-between",
-                    pathname === "/dashboard" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"
+                    pathname === "/dashboard" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white",
+                    !isPro && "opacity-60"
                   )}
                 >
-                  Dashboard
+                  <span className="flex items-center gap-2">
+                    Dashboard
+                    {!isPro && <Lock size={14} weight="bold" className="text-gray-500" />}
+                  </span>
                   {pathname === "/dashboard" && <div className="w-2 h-2 rounded-full bg-white" />}
                 </Link>
               )}
