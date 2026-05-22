@@ -2,7 +2,7 @@
 
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Check, Lightning, Crown, Sparkle, RocketLaunch, Buildings } from '@phosphor-icons/react';
+import { Check, Lightning, Crown, Sparkle, RocketLaunch } from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -81,29 +81,6 @@ const PLANS = [
       '5 utilizatori + webhook-uri',
     ],
     cta: 'coming_soon',
-  },
-  {
-    id: 'custom',
-    name: 'Custom',
-    price: 'De la $99',
-    period: '/ lună',
-    description: 'Soluție enterprise la cheie.',
-    icon: Buildings,
-    iconColor: 'text-gray-300',
-    iconBg: 'bg-white/10',
-    checkColor: 'text-gray-400',
-    border: 'border-white/10',
-    bg: 'bg-white/5',
-    badge: null,
-    features: [
-      'Link-uri și QR codes nelimitate',
-      'Custom domains nelimitate',
-      'White-label complet',
-      'SLA dedicat + onboarding',
-      'SSO / SAML + audit logs',
-      'Manager de cont dedicat',
-    ],
-    cta: 'contact',
   },
 ];
 
