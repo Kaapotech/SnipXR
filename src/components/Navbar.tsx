@@ -62,7 +62,7 @@ export default function Navbar() {
             return (
               <div key={tab.id} className="relative group/navitem">
                 <Link
-                  href={tab.href}
+                  href={locked ? '/plans' : tab.href}
                   className={cn(
                     "flex items-center gap-1.5 text-sm font-medium transition-colors",
                     pathname === tab.href ? tab.active : "text-gray-400",
@@ -161,7 +161,7 @@ export default function Navbar() {
                 return (
                   <Link
                     key={tab.id}
-                    href={tab.href}
+                    href={locked ? '/plans' : tab.href}
                     onClick={handleLinkClick}
                     className={cn(
                       "w-full text-left px-4 py-4 rounded-2xl text-lg font-bold transition-all flex items-center justify-between",
