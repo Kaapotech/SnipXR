@@ -43,9 +43,20 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
+    jwt: async ({ token }: any) => {
+      if (token.sub) {
+        const user = await db.user.findUnique({
+          where: { id: token.sub },
+          select: { plan: true },
+        });
+        token.plan = user?.plan ?? "free";
+      }
+      return token;
+    },
     session: async ({ session, token }: any) => {
       if (session.user) {
         session.user.id = token.sub;
+        session.user.plan = token.plan ?? "free";
       }
       return session;
     },

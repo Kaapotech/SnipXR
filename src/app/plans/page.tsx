@@ -11,7 +11,6 @@ import { cn } from '@/lib/utils';
 const FREE_FEATURES = [
   '15 link-uri scurtate / lună',
   '5 descărcări QR / lună',
-  'Statistici de bază (click-uri)',
   'Redirecționare instantanee',
 ];
 

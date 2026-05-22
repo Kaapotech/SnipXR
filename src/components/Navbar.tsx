@@ -68,7 +68,7 @@ export default function Navbar() {
               {tab.label}
             </Link>
           ))}
-          {session && (
+          {session?.user?.plan === "pro" && (
             <Link
               href="/dashboard"
               className={cn(
@@ -150,7 +150,7 @@ export default function Navbar() {
                 </Link>
               ))}
               
-              {session && (
+              {session?.user?.plan === "pro" && (
                 <Link
                   href="/dashboard"
                   onClick={handleLinkClick}
