@@ -98,8 +98,8 @@ const PLANS = [
     features: [
       'Link-uri și QR codes nelimitate',
       'Custom domains nelimitate',
-      'White-label complet (rebrand platformă)',
-      'SLA dedicat, onboarding personalizat',
+      'White-label complet',
+      'SLA dedicat + onboarding',
       'SSO / SAML + audit logs',
       'Manager de cont dedicat',
     ],
