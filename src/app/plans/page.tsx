@@ -118,7 +118,7 @@ export default function PlansPage() {
           </motion.div>
 
           {/* Plans grid */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 items-start">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 items-start max-w-5xl mx-auto">
             {PLANS.map((plan, i) => {
               const Icon = plan.icon;
               const isCurrent = plan.id === 'free'
