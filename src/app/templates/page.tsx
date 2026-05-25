@@ -1,16 +1,8 @@
 import TemplatePicker from '@/components/TemplatePicker';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
-import { redirect } from 'next/navigation';
 
 export default async function TemplatesPage() {
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    redirect('/login');
-  }
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-white flex flex-col pt-20 relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-6xl pointer-events-none">
