@@ -6,20 +6,18 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Link as LinkIcon, CursorClick, Calendar, Trash } from "@phosphor-icons/react/dist/ssr";
 import { deleteLink } from "./actions";
+import DashboardCharts from "@/components/DashboardCharts";
 
-function mostCommon(values: (string | null)[]): string {
-  const filtered = values.filter(Boolean) as string[];
-  if (!filtered.length) return "—";
+function aggregate(values: (string | null)[]): { name: string; value: number }[] {
   const freq: Record<string, number> = {};
-  for (const v of filtered) freq[v] = (freq[v] ?? 0) + 1;
-  return Object.entries(freq).sort((a, b) => b[1] - a[1])[0][0];
+  for (const v of values) {
+    if (v) freq[v] = (freq[v] ?? 0) + 1;
+  }
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([name, value]) => ({ name, value }));
 }
-
-const COUNTRY_FLAGS: Record<string, string> = {
-  RO: "🇷🇴", US: "🇺🇸", GB: "🇬🇧", DE: "🇩🇪", FR: "🇫🇷",
-  IT: "🇮🇹", ES: "🇪🇸", NL: "🇳🇱", CA: "🇨🇦", AU: "🇦🇺",
-  JP: "🇯🇵", CN: "🇨🇳", BR: "🇧🇷", IN: "🇮🇳", KR: "🇰🇷",
-};
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -32,6 +30,8 @@ export default async function DashboardPage() {
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const resetDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   const resetDateStr = resetDate.toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const allClickEvents: { country: string | null; browser: string | null; device: string | null }[] = [];
 
   const [links, linksThisMonth, qrThisMonth] = await Promise.all([
     db.link.findMany({
@@ -46,6 +46,17 @@ export default async function DashboardPage() {
     db.link.count({ where: { userId: session.user.id, createdAt: { gte: startOfMonth } } }),
     db.qrUsage.count({ where: { userId: session.user.id, createdAt: { gte: startOfMonth } } }),
   ]);
+
+  for (const link of links) allClickEvents.push(...link.clickEvents);
+
+  const clicksPerLink = links
+    .filter(l => l.clicks > 0)
+    .map(l => ({ name: l.shortCode, value: l.clicks }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 8);
+  const countries = aggregate(allClickEvents.map(e => e.country));
+  const browsers  = aggregate(allClickEvents.map(e => e.browser));
+  const devices   = aggregate(allClickEvents.map(e => e.device));
 
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
@@ -137,10 +148,6 @@ export default async function DashboardPage() {
                     <tr className="text-gray-500 text-xs uppercase tracking-widest border-b border-white/10">
                       <th className="px-6 py-4 font-bold">Original URL</th>
                       <th className="px-6 py-4 font-bold">Short Link</th>
-                      <th className="px-6 py-4 font-bold">Clicks</th>
-                      <th className="px-6 py-4 font-bold">Country</th>
-                      <th className="px-6 py-4 font-bold">Browser</th>
-                      <th className="px-6 py-4 font-bold">Device</th>
                       <th className="px-6 py-4 font-bold">Date</th>
                       <th className="px-6 py-4 font-bold">Expires</th>
                       <th className="px-6 py-4 font-bold"></th>
@@ -148,11 +155,6 @@ export default async function DashboardPage() {
                   </thead>
                   <tbody className="divide-y divide-white/5">
                     {links.map((link) => {
-                      const topCountry = mostCommon(link.clickEvents.map(c => c.country));
-                      const topBrowser = mostCommon(link.clickEvents.map(c => c.browser));
-                      const topDevice  = mostCommon(link.clickEvents.map(c => c.device));
-                      const flag = COUNTRY_FLAGS[topCountry] ?? "";
-
                       return (
                         <tr key={link.id} className="hover:bg-white/5 transition-colors">
                           <td className="px-6 py-4 max-w-xs truncate text-gray-400 text-sm">
@@ -166,24 +168,6 @@ export default async function DashboardPage() {
                             >
                               snipxr.com/{link.shortCode}
                             </a>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="bg-white/10 px-3 py-1 rounded-full text-xs font-bold">
-                              {link.clicks}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-300">
-                            {topCountry === "—" ? (
-                              <span className="text-gray-600">—</span>
-                            ) : (
-                              <span>{flag} {topCountry}</span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-300">
-                            {topBrowser === "—" ? <span className="text-gray-600">—</span> : topBrowser}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-300">
-                            {topDevice === "—" ? <span className="text-gray-600">—</span> : topDevice}
                           </td>
                           <td className="px-6 py-4 text-gray-500 text-sm">
                             {new Date(link.createdAt).toLocaleDateString()}
@@ -218,6 +202,13 @@ export default async function DashboardPage() {
               </div>
             )}
           </div>
+
+          <DashboardCharts
+            clicksPerLink={clicksPerLink}
+            countries={countries}
+            browsers={browsers}
+            devices={devices}
+          />
         </div>
       </div>
 

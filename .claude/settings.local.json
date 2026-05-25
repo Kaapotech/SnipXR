@@ -6,7 +6,8 @@
       "Bash(xargs grep:*)",
       "Bash(grep -r \"stripe\\\\|pricing\\\\|plan\\\\|subscription\" /c/Users/comic/Desktop/link_shortener --include=*.ts --include=*.tsx --include=*.json)",
       "Bash(grep -i \"pricing\\\\|plan\\\\|subscription\\\\|stripe\\\\|payment\\\\|upgrade\" /c/Users/comic/Desktop/link_shortener/src/app/page.tsx /c/Users/comic/Desktop/link_shortener/src/components/*.tsx)",
-      "Bash(npx prisma:*)"
+      "Bash(npx prisma:*)",
+      "Bash(npm install:*)"
     ]
   }
 }
