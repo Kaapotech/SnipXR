@@ -16,7 +16,7 @@ export default function Navbar() {
   const tabs = [
     { id: 'shorten', label: 'Link Shortener', href: '/link_shortener', color: 'hover:text-brand-blue', active: 'text-brand-blue', pro: false },
     { id: 'qr', label: 'QR Generator', href: '/qr_codes', color: 'hover:text-brand-magenta', active: 'text-brand-magenta', pro: false },
-    { id: 'templates', label: 'Templates', href: '/templates', color: 'hover:text-brand-yellow', active: 'text-brand-yellow', pro: true },
+    { id: 'templates', label: 'Templates', href: '/templates', color: 'hover:text-brand-yellow', active: 'text-brand-yellow', pro: false },
   ];
 
   const isPro = session?.user?.plan === 'pro';
@@ -86,18 +86,11 @@ export default function Navbar() {
                 href="/dashboard"
                 className={cn(
                   "flex items-center gap-1.5 text-sm font-medium transition-colors",
-                  pathname === "/dashboard" ? "text-white" : "text-gray-400",
-                  isPro ? "hover:text-white" : "opacity-60"
+                  pathname === "/dashboard" ? "text-white" : "text-gray-400 hover:text-white"
                 )}
               >
                 Dashboard
-                {!isPro && <Lock size={11} weight="bold" className="text-gray-500" />}
               </Link>
-              {!isPro && (
-                <div className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1.5 bg-black border border-white/10 rounded-lg text-xs text-gray-300 whitespace-nowrap opacity-0 group-hover/navitem:opacity-100 transition-opacity z-50">
-                  Necesită plan Pro
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -184,14 +177,10 @@ export default function Navbar() {
                   onClick={handleLinkClick}
                   className={cn(
                     "w-full text-left px-4 py-4 rounded-2xl text-lg font-bold transition-all flex items-center justify-between",
-                    pathname === "/dashboard" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white",
-                    !isPro && "opacity-60"
+                    pathname === "/dashboard" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"
                   )}
                 >
-                  <span className="flex items-center gap-2">
-                    Dashboard
-                    {!isPro && <Lock size={14} weight="bold" className="text-gray-500" />}
-                  </span>
+                  <span>Dashboard</span>
                   {pathname === "/dashboard" && <div className="w-2 h-2 rounded-full bg-white" />}
                 </Link>
               )}

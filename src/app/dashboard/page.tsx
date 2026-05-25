@@ -28,10 +28,6 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  if (session.user.plan !== "pro") {
-    redirect("/plans");
-  }
-
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
