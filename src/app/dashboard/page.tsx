@@ -28,9 +28,10 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const resetDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const resetDateStr = resetDate.toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' });
 
   const [links, linksThisMonth, qrThisMonth] = await Promise.all([
     db.link.findMany({
@@ -102,6 +103,7 @@ export default async function DashboardPage() {
               <div className={`text-3xl font-black ${linksThisMonth >= 15 ? 'text-red-400' : 'text-white'}`}>
                 {linksThisMonth} <span className="text-gray-500 text-lg font-normal">/ 15</span>
               </div>
+              <p className="text-xs text-gray-600 mt-3">Reset pe {resetDateStr}</p>
             </div>
 
             <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
@@ -114,6 +116,7 @@ export default async function DashboardPage() {
               <div className={`text-3xl font-black ${qrThisMonth >= 5 ? 'text-red-400' : 'text-white'}`}>
                 {qrThisMonth} <span className="text-gray-500 text-lg font-normal">/ 5</span>
               </div>
+              <p className="text-xs text-gray-600 mt-3">Reset pe {resetDateStr}</p>
             </div>
           </div>
 
