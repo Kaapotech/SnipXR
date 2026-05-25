@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { Zap, AlertTriangle } from 'lucide-react';
 import db from '@/lib/db';
 import { parseBrowser, parseDevice } from '@/lib/ua-parser';
+import PageRenderer from '@/components/page-templates/PageRenderer';
+import { PageLink, PageColors, BorderStyle } from '@/components/page-templates/types';
 
 interface Props {
   params: Promise<{ code: string }>;
@@ -12,6 +14,28 @@ interface Props {
 export default async function RedirectPage({ params }: Props) {
   const { code } = await params;
 
+  // 1. Check if it's a bio page
+  const page = await db.page.findUnique({ where: { slug: code } });
+  if (page && page.published) {
+    const links = (page.links as PageLink[]) ?? [];
+    const colors = (page.colors as Partial<PageColors>) ?? {};
+    return (
+      <PageRenderer
+        templateId={page.templateId}
+        data={{
+          name: page.name,
+          bio: page.bio,
+          avatarUrl: page.avatarUrl,
+          links,
+          borderStyle: (page.borderStyle as BorderStyle) ?? 'full',
+          colors,
+          showJoinButton: page.showJoinButton,
+        }}
+      />
+    );
+  }
+
+  // 2. Check if it's a short link
   let targetUrl: string | null = null;
 
   try {
@@ -51,6 +75,7 @@ export default async function RedirectPage({ params }: Props) {
     redirect(targetUrl);
   }
 
+  // 3. Not found
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0a0a] text-white p-4">
       <div className="bg-dark-gray border border-white/10 p-12 rounded-3xl max-w-md w-full text-center shadow-2xl animate-fade-in">
@@ -60,7 +85,7 @@ export default async function RedirectPage({ params }: Props) {
 
         <h1 className="text-3xl font-black mb-4">Link Expired or Not Found</h1>
         <p className="text-gray-400 mb-8 leading-relaxed">
-          The link you're looking for (<code>{code}</code>) doesn't exist or has been removed from our system.
+          The link you&apos;re looking for (<code>{code}</code>) doesn&apos;t exist or has been removed from our system.
         </p>
 
         <Link

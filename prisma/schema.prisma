@@ -24,6 +24,7 @@ model User {
   sessions      Session[]
   links         Link[]
   qrUsages      QrUsage[]
+  pages         Page[]
   createdAt     DateTime  @default(now())
 }
 
@@ -89,4 +90,22 @@ model QrUsage {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+}
+
+model Page {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug       String   @unique
+  templateId Int      @default(1)
+  name       String
+  bio        String?
+  avatarUrl  String?
+  links        Json     @default("[]")
+  borderStyle     String   @default("full")
+  colors          Json     @default("{}")
+  showJoinButton  Boolean  @default(true)
+  published       Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

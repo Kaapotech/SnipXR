@@ -74,7 +74,7 @@ export default function Navbar() {
                 </Link>
                 {locked && (
                   <div className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1.5 bg-black border border-white/10 rounded-lg text-xs text-gray-300 whitespace-nowrap opacity-0 group-hover/navitem:opacity-100 transition-opacity z-50">
-                    Necesită plan Pro
+                    Requires Pro plan
                   </div>
                 )}
               </div>

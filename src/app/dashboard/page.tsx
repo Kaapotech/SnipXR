@@ -29,7 +29,7 @@ export default async function DashboardPage() {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const resetDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  const resetDateStr = resetDate.toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' });
+  const resetDateStr = resetDate.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
 
   const allClickEvents: { country: string | null; browser: string | null; device: string | null }[] = [];
 
@@ -114,7 +114,7 @@ export default async function DashboardPage() {
               <div className={`text-3xl font-black ${linksThisMonth >= 15 ? 'text-red-400' : 'text-white'}`}>
                 {linksThisMonth} <span className="text-gray-500 text-lg font-normal">/ 15</span>
               </div>
-              <p className="text-xs text-gray-600 mt-3">Reset pe {resetDateStr}</p>
+              <p className="text-xs text-gray-600 mt-3">Resets on {resetDateStr}</p>
             </div>
 
             <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
@@ -127,9 +127,11 @@ export default async function DashboardPage() {
               <div className={`text-3xl font-black ${qrThisMonth >= 5 ? 'text-red-400' : 'text-white'}`}>
                 {qrThisMonth} <span className="text-gray-500 text-lg font-normal">/ 5</span>
               </div>
-              <p className="text-xs text-gray-600 mt-3">Reset pe {resetDateStr}</p>
+              <p className="text-xs text-gray-600 mt-3">Resets on {resetDateStr}</p>
             </div>
           </div>
+
+          <hr className="border-white/10 mb-10" />
 
           <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
             <div className="p-6 border-b border-white/10">
@@ -142,10 +144,10 @@ export default async function DashboardPage() {
                 <a href="/" className="bg-white text-black px-6 py-3 rounded-xl font-bold hover:bg-gray-200 transition-all">Create your first link</a>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto overflow-y-auto max-h-[420px]">
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="text-gray-500 text-xs uppercase tracking-widest border-b border-white/10">
+                    <tr className="text-gray-500 text-xs uppercase tracking-widest border-b border-white/10 sticky top-0 bg-[#111111] z-10">
                       <th className="px-6 py-4 font-bold">Original URL</th>
                       <th className="px-6 py-4 font-bold">Short Link</th>
                       <th className="px-6 py-4 font-bold">Date</th>
@@ -203,6 +205,7 @@ export default async function DashboardPage() {
             )}
           </div>
 
+          <div className="mt-16" />
           <DashboardCharts
             clicksPerLink={clicksPerLink}
             countries={countries}
