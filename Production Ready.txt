@@ -43,59 +43,7 @@ PROBLEME CRITICE (rezolva inainte de lansare)
    - Credentialele GitHub OAuth si parola bazei de date au fost expuse in istoric.
      Regenereaza-le imediat din GitHub Developer Settings si Supabase Dashboard.
 
-2. RATE LIMITING — NEFUNCTIONAL PE VERCEL
-   - Rate limiting-ul este implementat in-memory (src/lib/rate-limit.ts).
-   - Pe localhost functioneaza corect:
-       /api/shorten       → max 10 requesturi/minut per IP
-       /api/auth/register → max 5 requesturi/15 minute per IP
-   - Pe Vercel (serverless), fiecare request poate rula pe o instanta separata,
-     deci Map-ul in-memory se reseteaza si rate limiting-ul nu are efect.
-
-   SOLUTIE — Upstash Redis (gratuit, compatibil Vercel/Edge):
-
-   Pasul 1: Creeaza cont pe https://upstash.com
-             → Console → Redis → Create Database → alege regiunea cea mai apropiata
-
-   Pasul 2: Din dashboard-ul bazei de date, copiaza:
-             UPSTASH_REDIS_REST_URL=https://...upstash.io
-             UPSTASH_REDIS_REST_TOKEN=...
-
-   Pasul 3: Adauga in .env.local si in Vercel (Settings → Environment Variables)
-
-   Pasul 4: Instaleaza pachetele:
-             npm install @upstash/redis @upstash/ratelimit
-
-   Pasul 5: Inlocuieste src/lib/rate-limit.ts cu implementarea Upstash:
-
-     import { Ratelimit } from "@upstash/ratelimit";
-     import { Redis } from "@upstash/redis";
-
-     const redis = new Redis({
-       url: process.env.UPSTASH_REDIS_REST_URL!,
-       token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-     });
-
-     export const shortenLimiter = new Ratelimit({
-       redis,
-       limiter: Ratelimit.slidingWindow(10, "1 m"),
-       prefix: "rl:shorten",
-     });
-
-     export const registerLimiter = new Ratelimit({
-       redis,
-       limiter: Ratelimit.slidingWindow(5, "15 m"),
-       prefix: "rl:register",
-     });
-
-   Pasul 6: In fiecare route, inlocuieste checkRateLimit() cu:
-
-     const { success } = await shortenLimiter.limit(getClientIp(request));
-     if (!success) return new Response(
-       JSON.stringify({ error: "Too many requests. Please try again later." }),
-       { status: 429, headers: { "Content-Type": "application/json" } }
-     );
-
-3. NEXTAUTH_URL in Vercel
+2. NEXTAUTH_URL in Vercel
    - Trebuie sa fie URL-ul exact al site-ului de productie (ex: https://snipxr.com)
    - Daca e gresit, sesiunile nu persista si utilizatorii sunt delogati la refresh.
 
@@ -104,28 +52,19 @@ PROBLEME CRITICE (rezolva inainte de lansare)
 PROBLEME MEDII (importante pentru UX)
 ======================================
 
-4. LOGIN CU GOOGLE NON-FUNCTIONAL
+3. LOGIN CU GOOGLE NON-FUNCTIONAL
    - GOOGLE_CLIENT_ID si GOOGLE_CLIENT_SECRET nu sunt configurate in Vercel.
    - Butonul Google apare, dar nu face nimic util.
 
-5. LINKURI FARA CONT NU APAR IN DASHBOARD
-   - Linkurile create fara a fi logat au userId = null si nu sunt asociate contului.
-
-6. FARA VERIFICARE EMAIL
+4. FARA VERIFICARE EMAIL
    - Oricine poate crea cont cu orice adresa de email fara confirmare.
    - Risc de spam si conturi false.
-
-7. RACE CONDITION LA GENERARE COD
-   - Daca doua requesturi simultane genereaza acelasi cod scurt,
-     unul din ele va da eroare de baza de date.
-   - Solutie: retry logic sau generare UUID unica.
 
 
 ======================================
 FEATURES LIPSA (pentru versiunea completa)
 ======================================
 
-- Expirare automata a linkurilor (ex: dupa 30 de zile)
 - Custom aliases (ex: snipxr.com/oferta-mea)
 - Verificare URL impotriva bazelor de date phishing (Google Safe Browsing API)
 - Analytics detaliate per click (istoric complet, grafice, breakdown pe tari)

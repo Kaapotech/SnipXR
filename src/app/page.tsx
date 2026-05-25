@@ -97,7 +97,7 @@ export default function Home() {
                 Start Building <ArrowRight size={20} weight="bold" />
               </Link>
               <Link
-                href={session?.user?.plan === 'pro' ? '/templates' : '/plans'}
+                href="/templates"
                 className="bg-white/5 text-white border border-white/10 px-10 py-5 rounded-2xl font-bold hover:bg-white/10 transition-all text-lg w-full sm:w-auto justify-center"
               >
                 View Examples
