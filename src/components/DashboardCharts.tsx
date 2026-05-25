@@ -46,6 +46,7 @@ function PieCard({ title, data }: { title: string; data: ChartEntry[] }) {
       <div className="relative">
         <ResponsiveContainer width="100%" height={240}>
           <PieChart>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <Pie
               data={data}
               cx="50%"
@@ -54,8 +55,7 @@ function PieCard({ title, data }: { title: string; data: ChartEntry[] }) {
               outerRadius={85}
               paddingAngle={3}
               dataKey="value"
-              activeIndex={activeIndex}
-              activeShape={ActiveShape}
+              {...({ activeIndex, activeShape: ActiveShape } as any)}
               onMouseEnter={onEnter}
             >
               {data.map((_, i) => (
