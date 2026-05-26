@@ -38,6 +38,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'This slug is already taken.' }, { status: 409 });
   }
 
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
   const page = await db.page.create({
     data: {
       userId: session.user.id,
@@ -50,6 +52,7 @@ export async function POST(req: NextRequest) {
       borderStyle: borderStyle ?? 'full',
       colors: colors ?? {},
       showJoinButton: showJoinButton !== false,
+      expiresAt,
     },
   });
 

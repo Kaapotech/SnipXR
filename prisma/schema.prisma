@@ -86,10 +86,12 @@ model ClickEvent {
 }
 
 model QrUsage {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String?
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
 }
 
 model Page {
@@ -105,7 +107,8 @@ model Page {
   borderStyle     String   @default("full")
   colors          Json     @default("{}")
   showJoinButton  Boolean  @default(true)
-  published       Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  published       Boolean   @default(true)
+  expiresAt       DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }

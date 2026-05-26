@@ -23,7 +23,11 @@ export default function QRGenerator() {
 
   const downloadQR = async () => {
     setQrError(null);
-    const res = await fetch('/api/qr/track', { method: 'POST' });
+    const res = await fetch('/api/qr/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: text }),
+    });
     if (!res.ok) {
       const data = await res.json();
       setQrError(data.error ?? 'Download limit reached.');

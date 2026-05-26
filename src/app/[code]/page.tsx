@@ -16,7 +16,7 @@ export default async function RedirectPage({ params }: Props) {
 
   // 1. Check if it's a bio page
   const page = await db.page.findUnique({ where: { slug: code } });
-  if (page && page.published) {
+  if (page && page.published && (!page.expiresAt || page.expiresAt > new Date())) {
     const links = (page.links as PageLink[]) ?? [];
     const colors = (page.colors as Partial<PageColors>) ?? {};
     return (

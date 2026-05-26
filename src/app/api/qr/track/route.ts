@@ -5,7 +5,7 @@ import db from "@/lib/db";
 
 const QR_LIMIT = 5;
 
-export async function POST() {
+export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json(
@@ -29,7 +29,14 @@ export async function POST() {
     );
   }
 
-  await db.qrUsage.create({ data: { userId: session.user.id } });
+  let content: string | undefined;
+  try {
+    const body = await req.json();
+    content = body.content ?? undefined;
+  } catch {}
+
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  await db.qrUsage.create({ data: { userId: session.user.id, content, expiresAt } });
 
   return NextResponse.json({ allowed: true, remaining: QR_LIMIT - count - 1 });
 }
