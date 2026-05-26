@@ -3,11 +3,6 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import db from '@/lib/db';
 
-const PAGE_LIMITS: Record<string, number> = {
-  pro: 5,
-  advanced: Infinity,
-};
-
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -23,22 +18,6 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const plan = session.user.plan;
-  const limit = PAGE_LIMITS[plan];
-  if (!limit) return NextResponse.json({ error: 'Upgrade your plan to create pages.' }, { status: 403 });
-
-  if (limit !== Infinity) {
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
-    const count = await db.page.count({
-      where: { userId: session.user.id, createdAt: { gte: startOfMonth } },
-    });
-    if (count >= limit) {
-      return NextResponse.json({ error: `You've reached your ${limit} pages/month limit.` }, { status: 403 });
-    }
-  }
 
   const body = await req.json();
   const { slug, templateId, name, bio, avatarUrl, links, borderStyle, colors, showJoinButton } = body;
