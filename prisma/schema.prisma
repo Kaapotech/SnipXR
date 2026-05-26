@@ -72,6 +72,7 @@ model Link {
   user        User?        @relation(fields: [userId], references: [id])
   createdAt   DateTime     @default(now())
   expiresAt   DateTime?
+  hidden      Boolean      @default(false)
   clickEvents ClickEvent[]
 }
 
@@ -91,6 +92,7 @@ model QrUsage {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   content   String?
   expiresAt DateTime?
+  hidden    Boolean   @default(false)
   createdAt DateTime  @default(now())
 }
 

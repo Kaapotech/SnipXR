@@ -12,6 +12,6 @@ export async function deleteQrAction(id: string) {
   const qr = await db.qrUsage.findUnique({ where: { id } });
   if (!qr || qr.userId !== session.user.id) return;
 
-  await db.qrUsage.delete({ where: { id } });
+  await db.qrUsage.update({ where: { id }, data: { hidden: true } });
   revalidatePath('/dashboard/qr');
 }

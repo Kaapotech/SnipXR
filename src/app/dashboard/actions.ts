@@ -15,6 +15,6 @@ export async function deleteLink(linkId: string) {
 
   if (!link) throw new Error("Link not found or not authorized");
 
-  await db.link.delete({ where: { id: linkId } });
+  await db.link.update({ where: { id: linkId }, data: { hidden: true } });
   revalidatePath("/dashboard");
 }

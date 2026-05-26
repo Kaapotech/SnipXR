@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import db from '@/lib/db';
-import { Layout, ArrowRight, Globe, Eye, EyeSlash, Trash, ArrowCounterClockwise } from '@phosphor-icons/react/dist/ssr';
+import { Layout, ArrowRight, Globe, Eye, EyeSlash, Trash, ArrowCounterClockwise, Calendar } from '@phosphor-icons/react/dist/ssr';
 import Link from 'next/link';
 import { deletePageAction, togglePublishAction, renewPageAction } from './actions';
 
@@ -17,10 +17,22 @@ const TEMPLATE_NAMES: Record<number, string> = {
 export default async function DashboardTemplatesPage() {
   const session = await getServerSession(authOptions);
 
-  const pages = await db.page.findMany({
-    where: { userId: session!.user.id },
-    orderBy: { createdAt: 'desc' },
-  });
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const resetDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const resetDateStr = resetDate.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const PAGE_LIMITS: Record<string, number> = { free: 1, pro: 5, advanced: Infinity };
+  const plan = session!.user.plan ?? 'free';
+  const pageLimit = PAGE_LIMITS[plan] ?? 1;
+
+  const [pages, pagesThisMonth] = await Promise.all([
+    db.page.findMany({
+      where: { userId: session!.user.id },
+      orderBy: { createdAt: 'desc' },
+    }),
+    db.page.count({ where: { userId: session!.user.id, createdAt: { gte: startOfMonth } } }),
+  ]);
 
   return (
     <div>
@@ -36,6 +48,44 @@ export default async function DashboardTemplatesPage() {
           New page <ArrowRight size={16} weight="bold" />
         </Link>
       </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-brand-yellow/20 rounded-2xl">
+              <Layout size={24} className="text-brand-yellow" />
+            </div>
+            <span className="text-gray-400 font-bold uppercase tracking-widest text-xs">Total Pages</span>
+          </div>
+          <div className="text-3xl font-black">{pages.length}</div>
+        </div>
+
+        <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-brand-yellow/20 rounded-2xl">
+              <ArrowRight size={24} className="text-brand-yellow" />
+            </div>
+            <span className="text-gray-400 font-bold uppercase tracking-widest text-xs">Created This Month</span>
+          </div>
+          <div className={`text-3xl font-black ${pagesThisMonth >= pageLimit ? 'text-red-400' : 'text-white'}`}>
+            {pagesThisMonth}{' '}
+            <span className="text-gray-500 text-lg font-normal">
+              / {pageLimit === Infinity ? '∞' : pageLimit}
+            </span>
+          </div>
+          <p className="text-xs text-gray-600 mt-3">Resets on {resetDateStr}</p>
+        </div>
+
+        <div className="bg-white/5 border border-white/10 p-6 rounded-3xl">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-brand-yellow/20 rounded-2xl">
+              <Eye size={24} className="text-brand-yellow" />
+            </div>
+            <span className="text-gray-400 font-bold uppercase tracking-widest text-xs">Published</span>
+          </div>
+          <div className="text-3xl font-black">{pages.filter(p => p.published).length}</div>
+        </div>
+      </div>
 
       {pages.length === 0 ? (
         <div className="bg-white/5 border border-white/10 rounded-3xl p-20 text-center">

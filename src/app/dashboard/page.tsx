@@ -28,7 +28,7 @@ export default async function DashboardPage() {
 
   const [links, linksThisMonth] = await Promise.all([
     db.link.findMany({
-      where: { userId: session!.user.id },
+      where: { userId: session!.user.id, hidden: false },
       orderBy: { createdAt: "desc" },
       include: {
         clickEvents: {

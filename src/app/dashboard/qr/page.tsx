@@ -12,9 +12,13 @@ export default async function DashboardQRPage() {
   const resetDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   const resetDateStr = resetDate.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
 
+  const QR_LIMITS: Record<string, number> = { free: 5, pro: 20, advanced: Infinity };
+  const plan = session!.user.plan ?? 'free';
+  const qrLimit = QR_LIMITS[plan] ?? 5;
+
   const [qrCodes, qrThisMonth] = await Promise.all([
     db.qrUsage.findMany({
-      where: { userId: session!.user.id },
+      where: { userId: session!.user.id, hidden: false },
       orderBy: { createdAt: 'desc' },
     }),
     db.qrUsage.count({ where: { userId: session!.user.id, createdAt: { gte: startOfMonth } } }),
@@ -45,8 +49,11 @@ export default async function DashboardQRPage() {
             </div>
             <span className="text-gray-400 font-bold uppercase tracking-widest text-xs">Downloads This Month</span>
           </div>
-          <div className={`text-3xl font-black ${qrThisMonth >= 5 ? 'text-red-400' : 'text-white'}`}>
-            {qrThisMonth} <span className="text-gray-500 text-lg font-normal">/ 5</span>
+          <div className={`text-3xl font-black ${qrThisMonth >= qrLimit ? 'text-red-400' : 'text-white'}`}>
+            {qrThisMonth}{' '}
+            <span className="text-gray-500 text-lg font-normal">
+              / {qrLimit === Infinity ? '∞' : qrLimit}
+            </span>
           </div>
           <p className="text-xs text-gray-600 mt-3">Resets on {resetDateStr}</p>
         </div>
