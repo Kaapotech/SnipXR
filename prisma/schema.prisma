@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
@@ -13,36 +8,35 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
+  id            String      @id @default(cuid())
+  email         String?     @unique
+  createdAt     DateTime    @default(now())
   emailVerified DateTime?
   image         String?
+  name          String?
   password      String?
-  plan          String    @default("free")
+  plan          String      @default("free")
   accounts      Account[]
-  sessions      Session[]
   links         Link[]
+  sessions      Session[]
   qrUsages      QrUsage[]
   pages         Page[]
-  createdAt     DateTime  @default(now())
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?  @db.Text
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -69,48 +63,47 @@ model Link {
   shortCode   String       @unique
   clicks      Int          @default(0)
   userId      String?
-  user        User?        @relation(fields: [userId], references: [id])
   createdAt   DateTime     @default(now())
-  expiresAt   DateTime?
   hidden      Boolean      @default(false)
+  expiresAt   DateTime?
+  user        User?        @relation(fields: [userId], references: [id])
   clickEvents ClickEvent[]
 }
 
 model ClickEvent {
   id        String   @id @default(cuid())
   linkId    String
-  link      Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
   country   String?
   browser   String?
   device    String?
   createdAt DateTime @default(now())
+  link      Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
 }
 
 model QrUsage {
   id        String    @id @default(cuid())
   userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   content   String?
   expiresAt DateTime?
   hidden    Boolean   @default(false)
   createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Page {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  slug       String   @unique
-  templateId Int      @default(1)
-  name       String
-  bio        String?
-  avatarUrl  String?
-  links        Json     @default("[]")
-  borderStyle     String   @default("full")
-  colors          Json     @default("{}")
-  showJoinButton  Boolean  @default(true)
-  published       Boolean   @default(true)
-  expiresAt       DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  userId        String
+  slug          String    @unique
+  templateId    Int
+  name          String
+  bio           String?
+  avatarUrl     String?
+  links         Json      @default("[]")
+  borderStyle   String    @default("full")
+  colors        Json      @default("{}")
+  showJoinButton Boolean  @default(true)
+  published     Boolean   @default(true)
+  expiresAt     DateTime?
+  createdAt     DateTime  @default(now())
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

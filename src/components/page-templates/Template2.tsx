@@ -1,3 +1,4 @@
+"use client";
 // Template 2 — Yellow Brand
 import { PageData, PLATFORMS, BORDER_RADIUS } from './types';
 

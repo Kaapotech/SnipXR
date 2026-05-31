@@ -76,12 +76,12 @@ REZUMAT PRIORITATI
 ======================================
 
 Prioritate 1 — URGENT (securitate):
-  [ ] Regenereaza toate secretele expuse
+  ✅ Regenereaza toate secretele expuse
   ✅ Migreaza rate limiting la Upstash Redis (vezi sectiunea 2 de mai sus)
   [ ] Verifica NEXTAUTH_URL in Vercel
 
 Prioritate 2 — UX de baza:
-  [ ] Configureaza Google OAuth in Vercel
+  ✅ Configureaza Google OAuth in Vercel
   ✅ Linkuri fara cont revendicate automat la login
   ✅ Linkuri claimed numara in limita lunara (nu se poate ocoli limita de 15)
 

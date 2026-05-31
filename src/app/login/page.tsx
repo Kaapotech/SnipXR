@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { Lightning, ArrowRight, Envelope, Lock, GoogleLogo, GithubLogo } from '@phosphor-icons/react';
+import { Lightning, ArrowRight, Envelope, Lock, GoogleLogo } from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 
 export default function LoginPage() {
@@ -120,20 +120,12 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
-              className="flex items-center justify-center gap-2 py-3 border border-white/5 rounded-2xl hover:bg-white/5 transition-all text-sm font-bold"
-            >
-              <GoogleLogo size={20} /> Google
-            </button>
-            <button
-              onClick={() => signIn('github', { callbackUrl: '/dashboard' })}
-              className="flex items-center justify-center gap-2 py-3 border border-white/5 rounded-2xl hover:bg-white/5 transition-all text-sm font-bold"
-            >
-              <GithubLogo size={20} /> GitHub
-            </button>
-          </div>
+          <button
+            onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+            className="w-full flex items-center justify-center gap-2 py-3 border border-white/5 rounded-2xl hover:bg-white/5 transition-all text-sm font-bold"
+          >
+            <GoogleLogo size={20} /> Google
+          </button>
         </div>
 
         <p className="text-center mt-8 text-gray-400">
